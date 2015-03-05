@@ -1,0 +1,136 @@
+import java.awt.Dimension;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.*;
+
+import java.awt.image.*;
+import java.awt.Dimension;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.event.MouseInputAdapter;
+
+import java.awt.*;
+import java.util.*;
+public class MainScreen extends JFrame {
+	//JFrame frame;
+	JPanel panel;
+	JPanel buttonPanel;
+	JButton playPause;
+	JButton edit;
+	JButton delete;
+	
+	JPanel tracks;
+	JButton track;
+	JMenu rightClickOptions;
+	JMenu editFromMenu;
+	JMenu deleteFromMenu;
+	JOptionPane conformation;
+	
+	JSplitPane splitPane;
+	JSplitPane smallerSplitPane;
+	JScrollPane visualScroll;
+	JScrollPane trackScroll;
+	JScrollPane timelineScroll;
+	JLabel container;
+	JPanel timeline;
+	JPanel visualReps;
+	Script currentScript=new Script();
+	
+	
+	private ArrayList<Track> trackList;
+	public MainScreen() {
+		//frame=new JFrame();
+		setTracks();
+		
+		panel=new JPanel();
+		panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+		panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		
+	
+		visualReps=new JPanel();
+		timeline=new JPanel();
+		
+		visualScroll=new JScrollPane(visualReps);
+		trackScroll=new JScrollPane(tracks);
+		timelineScroll=new JScrollPane(timeline);
+		
+		smallerSplitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT, visualScroll, timelineScroll);
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, trackScroll, smallerSplitPane);
+	
+		
+		splitPane.setVisible(true);
+		smallerSplitPane.setVisible(true);
+		
+		
+		panel.add(splitPane);
+		//splitPane.setOneTouchExpandable(true);
+		//splitPane.setDividerLocation(150);
+		//Dimension minimumSize = new Dimension(100, 50);
+		//visualScroll.setMinimumSize(minimumSize);
+		//timelineScroll.setMinimumSize(minimumSize);
+
+		setDefaultLookAndFeelDecorated(true);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setContentPane(panel);
+		pack();
+		setSize(1000,500);
+		setVisible(true); 
+
+	}
+	private void setTracks(){
+		trackList=currentScript.getScriptTracks();
+		tracks=new TracksPanel();
+		tracks.setLayout(new GridLayout(trackList.size()+1,5,20,20));
+		tracks.add(new JLabel("File Name"));
+		tracks.add(new JLabel("Start Time"));
+		tracks.add(new JLabel("Relative to"));
+		tracks.add(new JLabel("From"));
+		tracks.add(new JLabel("Intensity"));
+		for (int counter=0;counter<trackList.size();counter++){
+			Track current=trackList.get(counter);
+			tracks.add(new JLabel(current.getTrackName()));
+			tracks.add(new JLabel(current.getStartTime().toString()));
+			tracks.add(new JLabel(current.getRelativeTo().getTrackName()));
+			tracks.add(new JLabel("?"));
+			String intensity="" + current.getIntensity();
+			tracks.add(new JLabel(intensity));
+		}
+		tracks.setBackground(Color.white);
+		
+	}
+	class ImageMouseListener extends MouseInputAdapter {
+		public void mouseClicked(MouseEvent e) {
+
+		}
+	}
+	class TracksPanel extends JPanel{
+		public void paintComponent(Graphics g){
+			super.paintComponent(g);
+			Graphics2D g2=(Graphics2D)g;
+			
+			int width,height;
+			width=(int)getSize().getWidth();
+			height=(int)getSize().getHeight();
+			int incrimentW=width/5;
+			for (int counter=width/5;counter<width;counter+=width/5){
+				g2.drawLine(counter, 0, counter, height);
+			}
+			GridLayout layout=(GridLayout)getLayout();
+			int numRows=layout.getRows();
+			for (int counter=height/numRows;counter<height;counter+=height/numRows){
+				g2.drawLine(0, counter, width, counter);
+			}
+			g2.setStroke(new BasicStroke(2));
+			g2.drawLine(5,height/(numRows+3),width-5,height/(numRows+3));
+		}
+	}
+
+}
