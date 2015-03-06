@@ -70,7 +70,7 @@ public class Track {
 	
 	}
 
-	public Track(String myName,Time start, Time end, Track relative, Script host,String newPath, String relativeTo) {
+	public Track(String myName,Time start, Time end, Track relative, Script host,String newPath, String beginning) {
 		trackName=myName;
 		relativeTo=relative;
 		startTime= start;
@@ -79,7 +79,7 @@ public class Track {
 		myScript=host;
 		soundFile=newPath;
 		file=new File(soundFile);
-		startOrEnd=relativeTo;
+		startOrEnd=beginning;
 	}
 	
 	public String getStartOrEnd() {
