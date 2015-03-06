@@ -1,5 +1,6 @@
 import java.awt.Dimension;
-import java.awt.event.MouseEvent;
+import java.sql.*;
+import java.awt.event.*;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -32,31 +33,53 @@ public class MainScreen extends JFrame {
 	JMenu rightClickOptions;
 	JMenu editFromMenu;
 	JMenu deleteFromMenu;
-	JOptionPane conformation;
+	JOptionPane confirmation;
 	
 	JSplitPane splitPane;
 	JSplitPane smallerSplitPane;
 	JScrollPane visualScroll;
 	JScrollPane trackScroll;
 	JScrollPane timelineScroll;
-	JLabel container;
 	JPanel timeline;
 	JPanel visualReps;
-	Script currentScript=new Script();
 	
+	JLabel[][] trackStats;
+	Track selected;
+	
+	Script currentScript;
 	
 	private ArrayList<Track> trackList;
-	public MainScreen() {
-		//frame=new JFrame();
+	private boolean previewing=false;
+	
+	public MainScreen(Script newScript) {
+		currentScript=newScript;
+		trackList=currentScript.getScriptTracks();
 		setTracks();
+		setPictures();
+		setTimeline();
 		
 		panel=new JPanel();
 		panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
-		panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		panel.setBorder(BorderFactory.createEmptyBorder(30,20,30,10));
+		panel.setBackground(new Color(204,229,255));
 		
+		buttonPanel=new JPanel();
+		buttonPanel.setLayout(new BoxLayout(buttonPanel,BoxLayout.X_AXIS));
+		buttonPanel.setBackground(Color.WHITE);
+		playPause=new JButton(new ImageIcon("PlayButton.png"));
+		playPause.addActionListener(new PlayListener());
+		edit=new JButton("Edit");
+		delete=new JButton("Delete");
+		playPause.setEnabled(false);
+		edit.setEnabled(false);
+		delete.setEnabled(false);
+		buttonPanel.add(playPause);
+		buttonPanel.add(edit);
+		buttonPanel.add(delete);
+		buttonPanel.setAlignmentX( Component.LEFT_ALIGNMENT );
+		panel.add(buttonPanel);
 	
-		visualReps=new JPanel();
-		timeline=new JPanel();
+	
 		
 		visualScroll=new JScrollPane(visualReps);
 		trackScroll=new JScrollPane(tracks);
@@ -81,45 +104,142 @@ public class MainScreen extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setContentPane(panel);
 		pack();
-		setSize(1000,500);
+		setSize(1000,1000);
 		setVisible(true); 
 
 	}
 	private void setTracks(){
-		trackList=currentScript.getScriptTracks();
-		tracks=new TracksPanel();
-		tracks.setLayout(new GridLayout(trackList.size()+1,5,20,20));
-		tracks.add(new JLabel("File Name"));
-		tracks.add(new JLabel("Start Time"));
-		tracks.add(new JLabel("Relative to"));
-		tracks.add(new JLabel("From"));
-		tracks.add(new JLabel("Intensity"));
+		tracks=new JPanel();
+		JPanel labels=new JPanel();
+		JPanel trackChart=new TracksPanel();
+		trackChart.setLayout(new GridLayout(trackList.size(),5,20,20));
+		labels.setLayout(new BoxLayout(labels,BoxLayout.X_AXIS));
+		trackChart.setBackground(Color.white);
+		labels.setBackground(Color.white);
+		
+		labels.add(new JLabel("File Name"));
+		labels.add(Box.createHorizontalGlue());
+		labels.add(Box.createRigidArea(new Dimension(10,0)));
+		labels.add(new JLabel("Start Time"));
+		labels.add(Box.createRigidArea(new Dimension(5,0)));
+		labels.add(Box.createHorizontalGlue());
+		labels.add(new JLabel("Relative to"));
+		labels.add(Box.createRigidArea(new Dimension(20,0)));
+		labels.add(Box.createHorizontalGlue());
+		labels.add(new JLabel("From"));
+		labels.add(Box.createRigidArea(new Dimension(20,0)));
+		labels.add(Box.createHorizontalGlue());
+		labels.add(new JLabel("Intensity"));
+		labels.add(Box.createHorizontalGlue());
+
+		trackStats=new JLabel[trackList.size()][5];
+		
 		for (int counter=0;counter<trackList.size();counter++){
 			Track current=trackList.get(counter);
-			tracks.add(new JLabel(current.getTrackName()));
-			tracks.add(new JLabel(current.getStartTime().toString()));
-			tracks.add(new JLabel(current.getRelativeTo().getTrackName()));
-			tracks.add(new JLabel("?"));
-			String intensity="" + current.getIntensity();
-			tracks.add(new JLabel(intensity));
+			trackStats[counter][0]=new JLabel(current.getTrackName());
+			trackChart.add(trackStats[counter][0]);
+			trackStats[counter][1]=new JLabel(current.getStartTime().toString());
+			trackChart.add(trackStats[counter][1]);
+			if (current.getRelativeTo()!=null)
+				trackStats[counter][2]=new JLabel(current.getRelativeTo().getTrackName());
+			else
+				trackStats[counter][2]=new JLabel("Start of Script");
+			trackChart.add(trackStats[counter][2]);
+			trackStats[counter][3]=new JLabel(current.startOrEnd());
+			trackChart.add(trackStats[counter][3]);
+			trackStats[counter][4]=new JLabel("" + current.getIntensity());
+			trackChart.add(trackStats[counter][4]);
 		}
-		tracks.setBackground(Color.white);
+		tracks.setLayout(new BoxLayout(tracks,BoxLayout.Y_AXIS));
+		tracks.add(labels);
+		tracks.add(trackChart);
+		trackSelect();
 		
 	}
-	class ImageMouseListener extends MouseInputAdapter {
+	private void trackSelect(){
+		for (int counter1=0;counter1<trackList.size();counter1++){
+			for (int counter2=0;counter2<5;counter2++){
+				trackStats[counter1][counter2].addMouseListener(new TrackMouseListener());
+			}
+		}
+	}
+	private Track findFirstTrack(){
+		
+		for (int counter=0;counter<trackList.size();counter++){
+			if (trackList.get(counter).relativeTo==null){
+				return trackList.get(counter);
+			}
+		}
+		return null;
+	}
+	private Track[] tracksRelativeTo(Track root){
+		ArrayList<Track> listTracks=new ArrayList<Track>();
+		Track[] relativeTracks;
+		int num=0;
+		for (int counter=0;counter<trackList.size();counter++){
+			if (trackList.get(counter).getRelativeTo()==root){
+				num++;
+				listTracks.add(trackList.get(counter));
+			}
+		}
+		relativeTracks=new Track[num];
+		for (int counter=0;counter<relativeTracks.length;counter++){
+			relativeTracks[counter]=listTracks.get(counter);
+		}
+		return relativeTracks;
+	}
+	private void setPictures(){
+		visualReps=new PicturesPanel();
+		visualReps.setBackground(Color.WHITE);
+		
+		
+	}
+	private void setTimeline(){	
+		timeline=new JPanel();
+		timeline.setBackground(Color.WHITE);
+		
+	}
+	private int timeToPixels(Time convert){
+		int hours=convert.getHours();
+		int minutes=convert.getMinutes();
+		int seconds=convert.getSeconds();
+		int totalSeconds=seconds + (minutes*60) + (hours*60*60);
+		return totalSeconds*2;
+	}
+	private Track findWhichTrack(JLabel label){
+		int rowIndex=0;
+		for (int counter=0;counter<trackList.size();counter++){
+			for (int counter2=0;counter2<5;counter2++){
+				if (trackStats[counter][counter2]==label){
+					rowIndex=counter;
+				}
+			}
+		}
+		String name=trackStats[rowIndex][0].getText();
+		for (int counter=0;counter<trackList.size();counter++){
+			if (trackList.get(counter).getTrackName().equals(name)){
+				return trackList.get(counter);
+			}
+		}
+		return null;
+	}
+	class TrackMouseListener extends MouseInputAdapter {
 		public void mouseClicked(MouseEvent e) {
-
+			selected=findWhichTrack((JLabel)e.getComponent());
+			playPause.setEnabled(true);
+			edit.setEnabled(true);
+			delete.setEnabled(true);
 		}
 	}
 	class TracksPanel extends JPanel{
 		public void paintComponent(Graphics g){
 			super.paintComponent(g);
 			Graphics2D g2=(Graphics2D)g;
-			
 			int width,height;
 			width=(int)getSize().getWidth();
 			height=(int)getSize().getHeight();
 			int incrimentW=width/5;
+			g2.drawLine(0, 0, width, 0);
 			for (int counter=width/5;counter<width;counter+=width/5){
 				g2.drawLine(counter, 0, counter, height);
 			}
@@ -128,9 +248,29 @@ public class MainScreen extends JFrame {
 			for (int counter=height/numRows;counter<height;counter+=height/numRows){
 				g2.drawLine(0, counter, width, counter);
 			}
-			g2.setStroke(new BasicStroke(2));
-			g2.drawLine(5,height/(numRows+3),width-5,height/(numRows+3));
+		}
+	}
+	class PicturesPanel extends JPanel{
+		public void paintComponent(Graphics g){
+			super.paintComponent(g);
+			Track first=findFirstTrack();
+			Track[] relativeToFirst=tracksRelativeTo(first);
+			
+		}
+	}
+	class PlayListener implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			if (!previewing){
+				playPause.setIcon(new ImageIcon("PauseButton.png"));
+				previewing=true;
+				currentScript.playScript();
+			}else{
+				playPause.setIcon(new ImageIcon("PlayButton.png"));
+				
+				previewing=false;
+			}
 		}
 	}
 
 }
+
