@@ -1,4 +1,3 @@
-
 import java.sql.*;
 import java.awt.event.*;
 import javax.swing.event.*;
@@ -184,14 +183,16 @@ public class MainScreen extends JFrame {
 	private void setPictures(){
 		visualReps=new PicturesPanel();
 		visualReps.setBackground(Color.WHITE);
+		visualReps.setLayout(new BoxLayout(visualReps,BoxLayout.Y_AXIS));
 	
-		for (int counter=0;counter<trackList.size();counter++){
+		/*for (int counter=0;counter<trackList.size();counter++){
 			Track current=trackList.get(counter);
 			Track relative=current.getRelativeTo();
 			BufferedImage toPrint=trackList.get(counter).generateGraphics("");
 			ImageIcon image=new ImageIcon(toPrint);
-			visualReps.add(new JLabel(image),secondsToPixels(current.getStartTimeSeconds()),30+(counter*50));
-		}
+			visualReps.add(new JLabel(image));
+			//,secondsToPixels(current.getStartTimeSeconds()),30+(counter*50));
+		}*/
 		
 	}
 	//Just draws the timeline panel.
@@ -273,7 +274,6 @@ public class MainScreen extends JFrame {
 				Track current=trackList.get(counter);
 				Track relative=current.getRelativeTo();
 				BufferedImage toPrint=trackList.get(counter).generateGraphics("");
-				ImageIcon image=new ImageIcon(toPrint);
 				g.drawImage(toPrint, secondsToPixels(current.getStartTimeSeconds()), 30+(counter*50), null);
 			}
 		}
@@ -334,3 +334,5 @@ public class MainScreen extends JFrame {
 	}
 
 }
+
+
