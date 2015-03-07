@@ -3,8 +3,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.sql.Time;
-
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -13,19 +11,17 @@ import javax.sound.sampled.Clip;
 
 public class Track {
 
-    String trackName;
-    String soundFile;
-    File file;
-    Clip clip;
-    AudioInputStream stream;
-    Time startTime;
-    Time endTime;
-    Time trackLength;
-    Track relativeTo;
-    int intensity;
-    Script myScript;
-    String startOrEnd;
-    public int getDurationMilliseconds() {
+    private String trackName;
+    private String soundFile;
+    private File file;
+    private Clip clip;
+    private AudioInputStream stream;
+    private Track relativeTo;
+    private int intensity;
+    private Script myScript;
+    private boolean startOrEnd;
+    private int trackLength;
+    private int getDurationMilliseconds() {
 	AudioInputStream input=AudioSystem.getAudioInputStream(file);
 	AudioFormat format=input.getFormat();
 	long fileLength=file.length();
@@ -64,26 +60,45 @@ public class Track {
 	}
     }
 
-    public Track(String myName,Time start, Time end, Track relative, Script host,String newPath, String beginning ) {
+    public Track(String myName, Track relative, Script host,String newPath, boolean beginning,int newIntensity) {
 	trackName=myName;
-	relativeTo=relative;
+	if(relative=null){
+	    relativeTo=this;
+	}else{
+	    relativeTo=relative;
+	}
+	startTime= start;
+	endTime= end;
+	intensity=newIntensity;
+	myScript=host;
+	soundFile=newPath;
+	file=new File(soundFile);
+	startOrEnd=beginning;
+	trackLength=getDurationMilliseconds();
+    }
+    public Track(String myName, Track relative, Script host,String newPath) {
+	trackName=myName;
+	if(relative=null){
+	    relativeTo=this;
+	}else{
+	    relativeTo=relative;
+	}
 	startTime= start;
 	endTime= end;
 	intensity=100;
 	myScript=host;
 	soundFile=newPath;
 	file=new File(soundFile);
-	startOrEnd=beginning;
+	startOrEnd=true;
+	trackLength=getDurationMilliseconds();
     }
-    public String getStartOrEnd() {
+    public boolean getStart() {
 	return startOrEnd;
     }
 
     public void changeIntensity(int newIntensity){intensity=newIntensity;}
     public Track getRelativeTo(){return relativeTo;}
-    public Time getStartTime() {return startTime;}
-    public Time getEndTime(){return endTime;}
-    public Time getLength(){return trackLength;}
+    public int getLength(){return trackLength;}
     public int getIntensity(){return intensity;}
     public void setIntensity(int newIntensity){intensity=newIntensity;}
     public String getTrackName(){return trackName;}
