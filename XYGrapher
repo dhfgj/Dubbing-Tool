@@ -21,7 +21,9 @@ public class XYGrapher {
 
     public BufferedImage drawGraph(int xPixelStart, int yPixelStart, int pixelsWide, int pixelsHigh){
         
-	area=new GraphPane(new BufferedImage(100,(int)xRange(), BufferedImage.TYPE_INT_ARGB));
+	BufferedImage theImage=new BufferedImage(100,(int)xRange(), BufferedImage.TYPE_INT_ARGB);
+	Graphics2D g2 = theImage.createGraphics();
+
 	
 	Coordinate xy=xyStart();
 	double x=xRange();
@@ -35,41 +37,13 @@ public class XYGrapher {
 	    double xPixel = xPixelStart + (thePoint.getX()-xy.getX())*(pixelsWide/x);
 	    double yPixel = yPixelStart + (xy.getY()+y-thePoint.getY())*(pixelsHigh/y);
 
-	    area.setPoints((int)xZero,(int)yZero,(int)xPixel,(int)yPixel);
-
+	   
+	    g2.drawLine(xZero,yZero,xPixel,yPixel);
 	    xZero=xPixel;
 	    yZero=yPixel;
 	    i++;
-	    area.repaint();
+	    
 	}
 	return area.getImage();
-    }
-    
-    private class GraphPane extends JPanel{
-	private BufferedImage myImage;
-	private int xZero;
-	private int yZero;
-	private int xPixel;
-	private int yPixel;
-	public GraphPane(BufferedImage theImage){
-	    myImage=theImage;
-	}
-	public BufferedImage getImage(){return myImage;}
-	public void setPoints(int xZ,int yZ,int xP,int yP){
-	    xZero=xZ;
-	    yZero=yZ;
-	    xPixel=xP;
-	    yPixel=yP;
-	}
-	public void paintComponent(Graphics g){
-	    super.paintComponent(g);
-	    Graphics2D g2 = myImage.createGraphics();
-	    try{
-		g2.drawLine(xZero,yZero,xPixel,yPixel);
-	    }catch(Exception e){
-
-	    }
-	}
-
     }
 }
