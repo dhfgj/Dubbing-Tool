@@ -92,7 +92,7 @@ public class Track {
     public void setEndTime(Time newTime){endTime=newTime;}
     public String getPath(){return soundFile;}
     public BufferedImage generateGraphics(){
-	byte[] myBytes=getBytes(500);
+	byte[] myBytes=getBytes(200);
 	Coordinate[] theseCoords=new Coordinate[myBytes.length];
 	for(int i=0;i<myBytes.length;i++){
 	    theseCoords[i]=new Coordinate(i, myBytes[i]);
