@@ -7,7 +7,6 @@ import java.awt.image.BufferedImage;
 public class XYGrapher {
     private double theWidth;
     private Coordinate[] coordinatesForGraph;
-    private GraphPane area;
     public XYGrapher(double width, Coordinate[] myCoords){theWidth=width; coordinatesForGraph=myCoords;}
     public Coordinate xyStart(){return new Coordinate(0.0,-50.0);}
     public double xRange(){return theWidth;}
@@ -44,6 +43,6 @@ public class XYGrapher {
 	    i++;
 	    
 	}
-	return area.getImage();
+	return theImage;
     }
 }
