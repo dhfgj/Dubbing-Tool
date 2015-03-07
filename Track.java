@@ -98,12 +98,12 @@ public class Track {
 
 	XYGrapher theGraph=new XYGrapher(rangeNum,theseCoords);
 
-	return XYGrapher.drawGraph(0,0,rangeNum,100);
+	return XYGrapher.drawGraph(0,0,(int)rangeNum,100);
     }
 
     public static int range(byte[] theBytes){
 	int max=theBytes[0];
-	int max=theBytes[0];
+	int min=theBytes[0];
 	for(int i=0;i<theBytes.length;i++){
 	    if(theBytes[i]>max){
 		max=theBytes[i];
