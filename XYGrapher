@@ -16,7 +16,7 @@ public class XYGrapher {
     public BufferedImage drawGraph(int xPixelStart, int yPixelStart, int pixelsWide, int pixelsHigh){
         
 	BufferedImage retImage=new BufferedImage(100,rangeNum, BufferedImage.TYPE_INT_ARGB);
-	Graphics2D g2 = off_Image.createGraphics();
+	Graphics2D g2 = retImage.createGraphics();
 	
         Coordinate xy=xyStart();
         double x=xRange();
