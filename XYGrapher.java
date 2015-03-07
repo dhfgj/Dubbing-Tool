@@ -7,10 +7,12 @@ import java.awt.image.BufferedImage;
 public class XYGrapher {
     private double theWidth;
     private Coordinate[] coordinatesForGraph;
-    public XYGrapher(double width, Coordinate[] myCoords){theWidth=width; coordinatesForGraph=myCoords;}
-    public Coordinate xyStart(){return new Coordinate(0.0,-50.0);}
+    private double myRange;
+    private double smallNum;
+    public XYGrapher(double smallest,double theRange,double width, Coordinate[] myCoords){smallNum=smallest;myRange=theRange;theWidth=width; coordinatesForGraph=myCoords;}
+    public Coordinate xyStart(){return new Coordinate(0.0,smallNum);}
     public double xRange(){return theWidth;}
-    public double yRange(){return 100.0;}
+    public double yRange(){return myRange;}
 
     public Coordinate getPoint(int pointNum){
 	if(pointNum>=coordinatesForGraph.length){
@@ -22,6 +24,7 @@ public class XYGrapher {
         
 	BufferedImage theImage=new BufferedImage(100,(int)xRange(), BufferedImage.TYPE_INT_ARGB);
 	Graphics2D g2 = theImage.createGraphics();
+
 
 	
 	Coordinate xy=xyStart();
