@@ -62,13 +62,11 @@ public class Track {
 
     public Track(String myName, Track relative, Script host,String newPath, boolean beginning,int newIntensity) {
 	trackName=myName;
-	if(relative=null){
+	if(relative==null){
 	    relativeTo=this;
 	}else{
 	    relativeTo=relative;
 	}
-	startTime= start;
-	endTime= end;
 	intensity=newIntensity;
 	myScript=host;
 	soundFile=newPath;
@@ -78,13 +76,11 @@ public class Track {
     }
     public Track(String myName, Track relative, Script host,String newPath) {
 	trackName=myName;
-	if(relative=null){
+	if(relative==null){
 	    relativeTo=this;
 	}else{
 	    relativeTo=relative;
 	}
-	startTime= start;
-	endTime= end;
 	intensity=100;
 	myScript=host;
 	soundFile=newPath;
@@ -103,8 +99,6 @@ public class Track {
     public void setIntensity(int newIntensity){intensity=newIntensity;}
     public String getTrackName(){return trackName;}
     public Script getScript(){return myScript;}
-    public void setStartTime(Time newTime){startTime=newTime;}
-    public void setEndTime(Time newTime){endTime=newTime;}
     public String getPath(){return soundFile;}
     public BufferedImage generateGraphics(){
 	byte[] myBytes=getBytes(200);
