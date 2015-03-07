@@ -138,27 +138,34 @@ public class Track {
 	for(int i=0;i<myBytes.length;i++){
 	    theseCoords[i]=new Coordinate(i, myBytes[i]);
 	}
+
 	double rangeNum=(double)range(myBytes);
-	
+	double smallNum=(double)minNum(myBytes);
+	XYGrapher theGraph=new XYGrapher(smallNum,rangeNum,myBytes.length,theseCoords);
 
-
-
-	XYGrapher theGraph=new XYGrapher(rangeNum,theseCoords);
-
-	return theGraph.drawGraph(0,0,(int)rangeNum,100);
+	return theGraph.drawGraph(0,0,myBytes.length,100);
     }
 
-    public static int range(byte[] theBytes){
+    private static int range(byte[] theBytes){
 	int max=theBytes[0];
 	int min=theBytes[0];
 	for(int i=0;i<theBytes.length;i++){
 	    if(theBytes[i]>max){
 		max=theBytes[i];
-	    }else if(i<min){
+	    }else if(theBytes[i]<min){
 		min=theBytes[i];
 	    }
 	}
 	return (max-min)+1;
+    }
+    private static int minNum(byte[] theBytes){
+	int min=theBytes[0];
+	for(int i=0;i<theBytes.length;i++){
+	    if(theBytes[i]<min){
+		min=theBytes[i];
+	    }
+	}
+	return min;
     }
     //	public void playTrack(){}
     //	public Clip getPlayableClip(){}
