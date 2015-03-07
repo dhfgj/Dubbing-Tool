@@ -74,7 +74,7 @@ public class Track {
 	soundFile=newPath;
 	file=new File(soundFile);
 	startOrEnd=beginning;
-	trackLength=getDurationMilliseconds();
+	trackLength=getDurationMilliseconds()/1000;
     }
     public Track(String myName, Track relative, Script host,String newPath) {
 	trackName=myName;
@@ -90,7 +90,7 @@ public class Track {
 	soundFile=newPath;
 	file=new File(soundFile);
 	startOrEnd=true;
-	trackLength=getDurationMilliseconds();
+	trackLength=getDurationMilliseconds()/1000;
     }
     public boolean getStart() {
 	return startOrEnd;
