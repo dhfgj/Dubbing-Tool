@@ -13,7 +13,11 @@ public class XYGrapher {
     public double xRange(){return theWidth;}
     public double yRange(){return 100.0;}
 
-    public Coordinate getPoint(int pointNum){return coordinatesForGraph[pointNum];}
+    public Coordinate getPoint(int pointNum){
+	if(pointNum>=coordinatesForGraph.length){
+	    return coordinatesForGraph[pointNum];
+	}else{return null;}
+    }
 
     public BufferedImage drawGraph(int xPixelStart, int yPixelStart, int pixelsWide, int pixelsHigh){
         
