@@ -33,6 +33,7 @@ public class Track {
 	float rate=format.getFrameRate();
 	float seconds=(fileLength/(frames * rate));
 	double milliseconds=seconds * 1000;
+	input.close();
 	return (int) milliseconds;
     }
     public byte[] getBytes(int milliseconds) {
@@ -40,12 +41,17 @@ public class Track {
 	BufferedInputStream input=new BufferedInputStream(new FileInputStream(soundFile));
 	int reader;
 	byte[] buffer= new byte[(int)file.length()];
+	
 	while ((reader=input.read(buffer))>0) {
 	    out.write(buffer, 0, reader);
 	}
+
 	out.flush();
+		
 	byte[] allBytes=out.toByteArray();
 	int totalMillis=getDurationMilliseconds();
+	out=null;
+	input.close();
 	if (totalMillis>milliseconds) {
 	    int sampleSize=(int) totalMillis/milliseconds; 
 	    byte[] sampleBytes=new byte[sampleSize];
@@ -98,7 +104,7 @@ public class Track {
 
 	XYGrapher theGraph=new XYGrapher(rangeNum,theseCoords);
 
-	return XYGrapher.drawGraph(0,0,(int)rangeNum,100);
+	return theGraph.drawGraph(0,0,(int)rangeNum,100);
     }
 
     public static int range(byte[] theBytes){
