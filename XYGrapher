@@ -6,7 +6,7 @@ import javax.swing.*;
 public class XYGrapher {
     private double theWidth;
     private Coordinate[] coordinatesForGraph;
-    public XYGrapher(double width, Coordinate[] myCoords,BufferedImage theImage){theWidth=width; coordinatesForGraph=myCoords;}
+    public XYGrapher(double width, Coordinate[] myCoords){theWidth=width; coordinatesForGraph=myCoords;}
     public Coordinate xyStart(){return new Coordinate(0.0,-50.0);}
     abstract public double xRange(){return theWidth;}
     public double yRange(){return 100.0;}
