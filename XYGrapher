@@ -15,8 +15,8 @@ public class XYGrapher {
 
     public Coordinate getPoint(int pointNum){
 	if(pointNum>=coordinatesForGraph.length){
-	    return coordinatesForGraph[pointNum];
-	}else{return null;}
+	    return null;
+	}else{return coordinatesForGraph[pointNum];}
     }
 
     public BufferedImage drawGraph(int xPixelStart, int yPixelStart, int pixelsWide, int pixelsHigh){
