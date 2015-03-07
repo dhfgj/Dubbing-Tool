@@ -121,7 +121,9 @@ public class Track {
     public boolean getStart() {
 	return startOrEnd;
     }
-
+    public void setStart(boolean newStart){
+	startOrEnd=newStart;
+    }
     public void changeIntensity(int newIntensity){intensity=newIntensity;}
     public Track getRelativeTo(){return relativeTo;}
     public int getLength(){return trackLength;}
