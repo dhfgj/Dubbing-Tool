@@ -62,13 +62,8 @@ public class Track {
 
     public Track(String myName, Track relative, Script host,String newPath, boolean beginning,int newIntensity) {
 	trackName=myName;
-	if(relative==null){
-	    relativeTo=this;
-	    startOrEnd=true;
-	}else{
-	    relativeTo=relative;
-	    startOrEnd=beginning;
-	}
+	relativeTo=relative;
+	startOrEnd=beginning;
 	intensity=newIntensity;
 	myScript=host;
 	soundFile=newPath;
@@ -77,11 +72,8 @@ public class Track {
     }
     public Track(String myName, Track relative, Script host,String newPath) {
 	trackName=myName;
-	if(relative==null){
-	    relativeTo=this;
-	}else{
-	    relativeTo=relative;
-	}
+	relativeTo=relative;
+	
 	intensity=100;
 	myScript=host;
 	soundFile=newPath;
@@ -91,13 +83,10 @@ public class Track {
     }
     public Track(String myName, Track relative, Script host,String newPath,boolean beginning) {
 	trackName=myName;
-	if(relative==null){
-	    relativeTo=this;
-	    startOrEnd=true;
-	}else{
-	    relativeTo=relative;
-	    startOrEnd=beginning;
-	}
+	
+	relativeTo=relative;
+	startOrEnd=beginning;
+	
 	intensity=100;
 	myScript=host;
 	soundFile=newPath;
@@ -106,11 +95,9 @@ public class Track {
     }
     public Track(String myName, Track relative, Script host,String newPath,int newIntensity) {
 	trackName=myName;
-	if(relative==null){
-	    relativeTo=this;
-	}else{
-	    relativeTo=relative;
-	}
+	
+	relativeTo=relative;
+	
 	intensity=newIntensity;
 	myScript=host;
 	soundFile=newPath;
@@ -118,6 +105,55 @@ public class Track {
 	startOrEnd=true;
 	trackLength=getDurationMilliseconds()/1000;
     }
+
+
+    public Track(String myName, Script host,String newPath, boolean beginning,int newIntensity) {
+	trackName=myName;
+	relativeTo=this;
+	startOrEnd=beginning;
+	intensity=newIntensity;
+	myScript=host;
+	soundFile=newPath;
+	file=new File(soundFile);
+	trackLength=getDurationMilliseconds()/1000;
+    }
+    public Track(String myName, Script host,String newPath) {
+	trackName=myName;
+	relativeTo=this;
+	
+	intensity=100;
+	myScript=host;
+	soundFile=newPath;
+	file=new File(soundFile);
+	startOrEnd=true;
+	trackLength=getDurationMilliseconds()/1000;
+    }
+    public Track(String myName, Script host,String newPath,boolean beginning) {
+	trackName=myName;
+	
+	relativeTo=this;
+	startOrEnd=beginning;
+	
+	intensity=100;
+	myScript=host;
+	soundFile=newPath;
+	file=new File(soundFile);
+	trackLength=getDurationMilliseconds()/1000;
+    }
+    public Track(String myName, Script host,String newPath,int newIntensity) {
+	trackName=myName;
+	
+	relativeTo=this;
+	
+	intensity=newIntensity;
+	myScript=host;
+	soundFile=newPath;
+	file=new File(soundFile);
+	startOrEnd=true;
+	trackLength=getDurationMilliseconds()/1000;
+    }
+
+    
     public boolean getStart() {
 	return startOrEnd;
     }
@@ -126,6 +162,7 @@ public class Track {
     }
     public void changeIntensity(int newIntensity){intensity=newIntensity;}
     public Track getRelativeTo(){return relativeTo;}
+    public void setRelativeTo(Track newRelative){relativeTo=newRelative;}
     public int getLength(){return trackLength;}
     public int getIntensity(){return intensity;}
     public void setIntensity(int newIntensity){intensity=newIntensity;}
