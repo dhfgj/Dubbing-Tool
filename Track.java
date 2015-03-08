@@ -22,42 +22,48 @@ public class Track {
     private boolean startOrEnd;
     private int trackLength;
     private int getDurationMilliseconds() {
-	AudioInputStream input=AudioSystem.getAudioInputStream(file);
-	AudioFormat format=input.getFormat();
-	long fileLength=file.length();
-	int frames=format.getFrameSize();
-	float rate=format.getFrameRate();
-	float seconds=(fileLength/(frames * rate));
-	double milliseconds=seconds * 1000;
-	input.close();
-	return (int) milliseconds;
+	try{	AudioInputStream input=AudioSystem.getAudioInputStream(file);
+	    AudioFormat format=input.getFormat();
+	    long fileLength=file.length();
+	    int frames=format.getFrameSize();
+	    float rate=format.getFrameRate();
+	    float seconds=(fileLength/(frames * rate));
+	    double milliseconds=seconds * 1000;
+	    input.close();
+	    return (int) milliseconds;}catch(Exception e){}
+	return 0;
     }
     public byte[] getBytes(int milliseconds) {
-	ByteArrayOutputStream out=new ByteArrayOutputStream();
-	BufferedInputStream input=new BufferedInputStream(new FileInputStream(soundFile));
-	int reader;
-	byte[] buffer= new byte[(int)file.length()];
+	try{
+	    ByteArrayOutputStream out=new ByteArrayOutputStream();
+	    BufferedInputStream input=new BufferedInputStream(new FileInputStream(soundFile));
+	    int reader;
+	    byte[] buffer= new byte[(int)file.length()];
 	
-	while ((reader=input.read(buffer))>0) {
-	    out.write(buffer, 0, reader);
-	}
-
-	out.flush();
-		
-	byte[] allBytes=out.toByteArray();
-	int totalMillis=getDurationMilliseconds();
-	out=null;
-	input.close();
-	if (totalMillis>milliseconds) {
-	    int sampleSize=(int) totalMillis/milliseconds; 
-	    byte[] sampleBytes=new byte[sampleSize];
-	    for (int i=0; i<sampleSize; i++) {
-		sampleBytes[i]=allBytes[i * sampleSize];
+	    while ((reader=input.read(buffer))>0) {
+		out.write(buffer, 0, reader);
 	    }
-	    return sampleBytes;
-	} else {
-	    return allBytes;
-	}
+
+	    out.flush();
+		
+	    byte[] allBytes=out.toByteArray();
+	    int totalMillis=getDurationMilliseconds();
+	    out=null;
+	    input.close();
+
+	
+	    if (totalMillis>milliseconds) {
+		int sampleSize=(int) totalMillis/milliseconds; 
+		byte[] sampleBytes=new byte[sampleSize];
+		for (int i=0; i<sampleSize; i++) {
+		    sampleBytes[i]=allBytes[i * sampleSize];
+		}
+		return sampleBytes;
+	    } else {
+		return allBytes;
+	    }
+	}catch(Exception e){}
+	return new byte[1];
     }
 
     public Track(String myName, Track relative, Script host,String newPath, boolean beginning,int newIntensity) {
