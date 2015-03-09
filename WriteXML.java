@@ -31,63 +31,85 @@ import org.w3c.dom.Element;
 public class WriteXML {
 
 	public WriteXML(ArrayList<Track> tracks, String path) {
-		
+
 		try {
 			DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder= dbf.newDocumentBuilder();
-			
+
 			Document doc=docBuilder.newDocument();
-			
+
 			Element rootElement=doc.createElement("Script");
 			doc.appendChild(rootElement);
 
 
 			for (int i=0; i<tracks.size(); i++) {
-				
+
 				Track getInfo=tracks.get(i);
-				
+
 				Element track=doc.createElement("Track");
 				rootElement.appendChild(track);
+
+				Element scriptName = doc.createElement("scriptName");
+				scriptName.appendChild(doc.createTextNode(getInfo.getTrackName()));
+				track.appendChild(scriptName);
 
 				Attr file=doc.createAttribute("filePath");
 				file.setValue(getInfo.getPath());
 				track.setAttributeNode(file);
+
+				Element name = doc.createElement("name");
+				name.appendChild(doc.createTextNode(getInfo.getTrackName()));
+				track.appendChild(name);
 
 				Element intensity = doc.createElement("intensity");
 				intensity.appendChild(doc.createTextNode(Integer.toString(getInfo.getIntensity())));
 				track.appendChild(intensity);
 
 				Element relativeToNum = doc.createElement("relativeToNum");
-				relativeToNum.appendChild(doc.createTextNode("......."));
+				relativeToNum.appendChild(doc.createTextNode(getInfo.getRelativeTo().getPath()));
 				track.appendChild(relativeToNum);
+
+				Element startOrEnd = doc.createElement("startOrEnd");
+				startOrEnd.appendChild(doc.createTextNode(String.valueOf(getInfo.getStart())));
+				track.appendChild(startOrEnd);
+
+
 			}
 
 			TransformerFactory tFact=TransformerFactory.newInstance();
 			Transformer tForm=tFact.newTransformer();
-			
+
 			DOMSource docSource= new DOMSource(doc);
 			StreamResult str=new StreamResult(new File(path));
-			
+
 			tForm.transform(docSource, str);
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void main(String[] args) {
-	
+
 		try {
-		DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder= dbf.newDocumentBuilder();
-		
-		Document doc=docBuilder.newDocument();
-		
-		Element rootElement=doc.createElement("Script");
-		doc.appendChild(rootElement);
+			DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder= dbf.newDocumentBuilder();
+
+			Document doc=docBuilder.newDocument();
+
+			Element rootElement=doc.createElement("Script");
+			doc.appendChild(rootElement);
 
 			Element track=doc.createElement("Track");
 			rootElement.appendChild(track);
+
+			Element scriptName = doc.createElement("scriptName");
+			scriptName.appendChild(doc.createTextNode("Happy BLUBBER"));
+			track.appendChild(scriptName);
+
+			Element name = doc.createElement("name");
+			name.appendChild(doc.createTextNode("DanceATheRobe(NAME)"));
+			track.appendChild(name);
 
 			Attr file=doc.createAttribute("filePath");
 			file.setValue(".................");
@@ -101,18 +123,22 @@ public class WriteXML {
 			relativeToNum.appendChild(doc.createTextNode("4"));
 			track.appendChild(relativeToNum);
 
-		TransformerFactory tFact=TransformerFactory.newInstance();
-		Transformer tForm=tFact.newTransformer();
-		
-		DOMSource docSource= new DOMSource(doc);
-		StreamResult str=new StreamResult(new File("Z:\\AOOD\\TEST3.xml"));
-		
-		tForm.transform(docSource, str);
-		
-		
-	} catch (Exception e) {
-		e.printStackTrace();
-	}
+			Element startOrEnd = doc.createElement("startOrEnd");
+			startOrEnd.appendChild(doc.createTextNode("trueOrFalse(startOrEnd)"));
+			track.appendChild(startOrEnd);
+
+			TransformerFactory tFact=TransformerFactory.newInstance();
+			Transformer tForm=tFact.newTransformer();
+
+			DOMSource docSource= new DOMSource(doc);
+			StreamResult str=new StreamResult(new File("Z:\\AOOD\\ReadingTEST3.xml"));
+
+			tForm.transform(docSource, str);
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }
