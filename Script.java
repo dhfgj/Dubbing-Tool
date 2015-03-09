@@ -41,7 +41,7 @@ public class Script {
     public int getDuration(){}
     
     public File generateSoundFile(){} 
-    public void saveScript(){} //<--XML one
+    public void saveScript(){ WriteXML xml=new WriteXML(tracks, path); } //<--XML one
     public void updateScript(){} //<--write out as WAV one
 
     //needs to read in XML?
