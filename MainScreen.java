@@ -2,12 +2,12 @@ import java.sql.*;
 import java.awt.event.*;
 import javax.swing.event.*;
 import javax.swing.*;
-import javax.swing.*;
 import java.awt.image.*;
 import java.awt.*;
 import java.util.*;
+import java.util.Date;
 public class MainScreen extends JFrame {
-	//JFrame frame;
+
 	JPanel panel;
 	JPanel buttonPanel;
 	JButton playPause;
@@ -16,10 +16,7 @@ public class MainScreen extends JFrame {
 	
 	JPanel tracks;
 	JButton track;
-	JMenu rightClickOptions;
-	JMenu editFromMenu;
-	JMenu deleteFromMenu;
-	JOptionPane confirmation;
+
 	
 	JSplitPane splitPane;
 	JSplitPane smallerSplitPane;
@@ -28,8 +25,11 @@ public class MainScreen extends JFrame {
 	JScrollPane timelineScroll;
 	JPanel timeline;
 	JPanel visualReps;
-	
+	Date now;
+	long startedAt;
+	long pausedAt;
 	JLabel[][] trackStats;
+	ArrayList<Track> sortedTracks;
 	Track selected;
 	
 	Script currentScript;
@@ -68,24 +68,21 @@ public class MainScreen extends JFrame {
 	
 		
 		visualScroll=new JScrollPane(visualReps);
+		visualScroll.addMouseListener(new VisualMouseListener());
 		visualScroll.setPreferredSize(new Dimension(100,500));
 		trackScroll=new JScrollPane(tracks);
 		timelineScroll=new JScrollPane(timeline);
 		
 		smallerSplitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT, visualScroll, timelineScroll);
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, trackScroll, smallerSplitPane);
-	
+
 		
 		splitPane.setVisible(true);
 		smallerSplitPane.setVisible(true);
 		
 		
 		panel.add(splitPane);
-		//splitPane.setOneTouchExpandable(true);
-		//splitPane.setDividerLocation(150);
-		//Dimension minimumSize = new Dimension(100, 50);
-		//visualScroll.setMinimumSize(minimumSize);
-		//timelineScroll.setMinimumSize(minimumSize);
+
 
 		setDefaultLookAndFeelDecorated(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -94,6 +91,21 @@ public class MainScreen extends JFrame {
 		setSize(1000,1000);
 		setVisible(true); 
 
+	}
+	//sorts Tracks. 
+	private void sortTracks(ArrayList<Track> list) {
+		String trackNamePlaceholder=null;
+		for (Track track: trackList) {
+			if (track.getRelativeTo()!=null){
+				if (trackNamePlaceholder.equals(track.getRelativeTo().getTrackName())) {
+					//fix
+				}
+
+			} else {
+				sortedTracks.set(0, track);
+				trackName
+			}
+		}
 	}
 	//Draws Scrollable Track List
 	private void setTracks(){
@@ -236,15 +248,95 @@ public class MainScreen extends JFrame {
 	private int secondsToPixels(int seconds){
 		return seconds*5+10;
 	}
+	class RightClickOptions extends JPopupMenu implements ActionListener {
+		Track currentTrack;
+		public RightClickOptions(Track current) {
+			JMenuItem editFromMenu=new JMenuItem("Edit");
+			editFromMenu.addActionListener(this);
+			JMenuItem deleteFromMenu=new JMenuItem("Delete");
+			deleteFromMenu.addActionListener(this);
+			add(editFromMenu);
+			add(deleteFromMenu);
+			currentTrack=current;
+		}
+		public void actionPerformed(ActionEvent e) {
+			if (e.getActionCommand().equals("Edit")) {
+				new TrackDialog(currentTrack);
+			} else if (e.getActionCommand().equals("Delete")) {
+				if (JOptionPane.YES_OPTION==JOptionPane.showConfirmDialog(null,"Are you sure?","Conformation", JOptionPane.YES_NO_OPTION)){
+					Script script=currentTrack.getScript();
+					script.deleteTrack(currentTrack);
+				} else {
+					//nothing happens here
+				}
+			}
+		}
+
+	}
 	//For the scrollable list, when someone clicks on it.
 	class TrackMouseListener extends MouseInputAdapter {
 		public void mouseClicked(MouseEvent e) {
-			selected=findWhichTrack((JLabel)e.getComponent());
-			playPause.setEnabled(true);
-			edit.setEnabled(true);
-			delete.setEnabled(true);
+		
+			if (e.getButton()==MouseEvent.BUTTON3){
+				//right click
+				previewing=false;
+				playPause.setEnabled(false);
+				edit.setEnabled(false);
+				delete.setEnabled(false);
+				pausedAt=-1;
+				startedAt=-2;
+				RightClickOptions rco= new RightClickOptions(findWhichTrack((JLabel)e.getComponent()));
+				rco.show(e.getComponent(), e.getX(), e.getY());
+
+			} else if (e.getClickCount()==1) {
+				//single click
+				if (findWhichTrack((JLabel)e.getComponent())!=selected){
+					previewing=false;
+					pausedAt=-1;
+					startedAt=-2;
+					selected=findWhichTrack((JLabel)e.getComponent());
+				}
+				e.getComponent().setBackground(Color.gray);
+				playPause.setEnabled(true);
+				edit.setEnabled(true);
+				delete.setEnabled(true);
+			} else if (e.getClickCount()==2) {
+				//double click
+				previewing=false;
+				playPause.setEnabled(false);
+				edit.setEnabled(false);
+				delete.setEnabled(false);
+				pausedAt=-1;
+				startedAt=-2;
+				selected=findWhichTrack((JLabel)e.getComponent());
+				new TrackDialog(selected);
+			} 
 		}
 	}
+	class VisualMouseListener extends MouseInputAdapter{
+		public void MouseClicked(MouseEvent e) {
+			if (e.getClickCount()==2) {
+				previewing=false;
+				pausedAt=-1;
+				startedAt=-2;
+				Track selected=null;
+				String selectedName=null;
+				int x=e.getX();
+				int y=e.getY();
+				for (int i=1; i<=trackList.size(); i++) {
+					if (y<getHeight()*i/trackList.size() && y>getHeight()*(i-1)/trackList.size()) {
+						selected=trackList.get(i-1);
+						if (x<secondsToPixels(selected.getStartTimeSeconds()+selected.getLength())&& x>secondsToPixels(selected.getStartTimeSeconds())){
+							new TrackDialog(selected);
+						}
+						//need to double check parameters of the click area
+
+					}
+				}
+			}
+		}
+	}
+
 	//Draws the chart for the tracks
 	class TracksPanel extends JPanel{
 		public void paintComponent(Graphics g){
@@ -323,12 +415,23 @@ public class MainScreen extends JFrame {
 	class PlayListener implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 			if (!previewing){
+				if (pausedAt>0 & pausedAt<selected.getLength()) {
+					selected.playTrackFrom();
+					//clip allows users to specify from where they should start playing
+				} else {
+					now=new Date();
+					startedAt=now.getTime();
+					selected.playTrack();
+					//this has to be changed too
+				}
 				playPause.setIcon(new ImageIcon("PauseButton.png"));
 				previewing=true;
-				selected.playTrack();
+				
 			}else{
 				playPause.setIcon(new ImageIcon("PlayButton.png"));
 				previewing=false;
+				now=new Date();
+				pausedAt=now.getTime()-startedAt;
 			}
 		}
 	}
