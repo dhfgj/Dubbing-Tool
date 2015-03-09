@@ -118,11 +118,12 @@ public class ReadXML {
 			e.printStackTrace();
 		}
 		
-		for (int i=0; i<script.getScriptTracks().size(); i++) {
+		//Testing
+		/*for (int i=0; i<script.getScriptTracks().size(); i++) {
 			Track blubber=script.getScriptTracks().get(i);
 			
 			System.out.println(blubber.getTrackName() + ", " + blubber.getPath() + ", " + blubber.getIntensity() + ", " + blubber.getStart());
-		}
+		}*/
 
 		return script;
 		
@@ -133,8 +134,11 @@ public class ReadXML {
 	
 	public static void main(String[] args) {
 		test();
-		System.out.println("\n\n\n.......");
+		
+		//Uncomment For Testing
+		/*System.out.println("\n\n\n.......");
 		Script happy=openXMLNewScript("Z:\\AOOD\\ReadingTEST3.xml");
+		*/
 	}
 
 }
