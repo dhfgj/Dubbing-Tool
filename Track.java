@@ -377,7 +377,7 @@ public class Track {
 	//	public void playTrack(){}
 	//	public Clip getPlayableClip(){}
 	
-	public static void main(String[] args) {
+/*	public static void main(String[] args) {
     	Track baladev=new Track("...", null, "src/Baladev_39_s_Theme.wav");
     	JFrame bello=new JFrame();
     	
@@ -389,7 +389,7 @@ public class Track {
         bello.add(jPanel);
         bello.setVisible(true);
     	
-    }
+    }*/
 
 }
 
