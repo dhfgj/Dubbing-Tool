@@ -37,11 +37,17 @@ public class Track {
 		secondsOffset=newSeconds;
 	}
 
-
+	private int getDurationSeconds() {
+		try {
+			return (int) (getDurationMilliseconds()/1000);
+		} catch(Exception e) {
+			
+		}
+		
+		return 0;
+	}
 
 	private int getDurationMilliseconds() {
-
-
 		try{	AudioInputStream input=AudioSystem.getAudioInputStream(file);
 		AudioFormat format=input.getFormat();
 		long fileLength=file.length();
@@ -378,7 +384,7 @@ public class Track {
 	//	public Clip getPlayableClip(){}
 	
 /*	public static void main(String[] args) {
-    	Track baladev=new Track("...", null, "src/Baladev_39_s_Theme.wav");
+    	Track baladev=new Track("...", null, "src/(100) Daft Punk - Lose Yourself to Dance.wav");
     	JFrame bello=new JFrame();
     	
     	bello.setSize(500,500);
