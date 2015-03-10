@@ -25,7 +25,7 @@ public class XYGrapher {
 	BufferedImage theImage=new BufferedImage(100,(int)xRange(), BufferedImage.TYPE_INT_ARGB);
 	Graphics2D g2 = theImage.createGraphics();
 
-
+	g2.setColor(new Color(22, 145, 217).darker());
 	
 	Coordinate xy=xyStart();
 	double x=xRange();
