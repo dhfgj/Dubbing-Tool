@@ -435,6 +435,44 @@ public class MainScreen extends JFrame {
 			}
 		}
 	}
+	public void playTrack(Track track, int frameStart) {
+	    File soundFile = new File(track.getPath());
+	    AudioInputStream sound=null;
+		try {
+			sound = AudioSystem.getAudioInputStream(soundFile);
+		} catch (UnsupportedAudioFileException e2) {
+			e2.printStackTrace();
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+	    DataLine.Info info = new DataLine.Info(Clip.class, sound.getFormat());
+	    Clip clip=null;
+		try {
+			clip = (Clip) AudioSystem.getLine(info);
+		} catch (LineUnavailableException e1) {
+			e1.printStackTrace();
+		}
+	    try {
+			clip.open(sound);
+		} catch (LineUnavailableException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	    clip.setFramePosition(frameStart);
+	    /*clip.addLineListener(new LineListener() {
+	      public void update(LineEvent event) {
+	        if (event.getType() == LineEvent.Type.STOP) {
+	          event.getLine().close();
+	          System.exit(0);
+	          //this should probably open a popup
+	        }
+	      }
+	    });*/
+	    clip.start();
+
+	}
+
 
 }
 
