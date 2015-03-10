@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -319,6 +320,7 @@ public class Track {
 	public String getTrackName(){return trackName;}
 	public Script getScript(){return myScript;}
 	public String getPath(){return soundFile;}
+	
 	public BufferedImage generateGraphics(){
 		byte[] myBytes=getBytes(200);
 		Coordinate[] theseCoords=new Coordinate[myBytes.length];
@@ -328,19 +330,22 @@ public class Track {
 
 		double rangeNum=(double)range(myBytes);
 		double smallNum=(double)minNum(myBytes);
-		XYGrapher theGraph=new XYGrapher(smallNum,rangeNum,myBytes.length,theseCoords);
+		XYGrapher theGraph=new XYGrapher(smallNum,rangeNum,myBytes.length*100,theseCoords);
 
-		return theGraph.drawGraph(0,0,myBytes.length,100);
+		return theGraph.drawGraph(0,0,myBytes.length*100,100);
 	}
 	
 	public int startTime() {
 		Track relative=this;
+		Track next=null;
 		
 		int millis=-relative.getDurationMilliseconds();
 		
-		while (relative!=null) {
+		while (relative!=next) {
 			millis=millis + relative.getDurationMilliseconds();
+			next=this;
 			relative=this.getRelativeTo();
+			
 		}
 		
 		return (int) millis/1000;
@@ -383,19 +388,22 @@ public class Track {
 	//	public void playTrack(){}
 	//	public Clip getPlayableClip(){}
 	
-/*	public static void main(String[] args) {
+	public static void main(String[] args) {
     	Track baladev=new Track("...", null, "src/(100) Daft Punk - Lose Yourself to Dance.wav");
     	JFrame bello=new JFrame();
     	
     	bello.setSize(500,500);
+    	bello.setBackground(Color.BLACK);
     	//JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
     	JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
         JPanel jPanel = new JPanel();
+        
+        jPanel.setBackground(Color.CYAN);
         jPanel.add(jLabel);
         bello.add(jPanel);
         bello.setVisible(true);
     	
-    }*/
+    }
 
 }
 
