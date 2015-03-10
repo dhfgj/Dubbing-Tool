@@ -100,6 +100,7 @@ public class ReadXML {
 				String name=elem.getElementsByTagName("name").item(0).getTextContent();
 				int intensity=Integer.parseInt(elem.getElementsByTagName("intensity").item(0).getTextContent());
 				boolean startOrEnd=Boolean.valueOf(elem.getElementsByTagName("startOrEnd").item(0).getTextContent());
+				int secondsOffset=Integer.parseInt(elem.getElementsByTagName("secondsOffset").item(0).getTextContent());
 				
 				//public Track(String myName, Track relative, Script host,String newPath, boolean beginning,int newIntensity)
 				
@@ -107,7 +108,7 @@ public class ReadXML {
 				if (i==0) {
 					track=new Track(name, null, script, path, startOrEnd, intensity);
 				} else {
-					track=new Track(name, tracks.get(i-1), script, path, startOrEnd, intensity);
+					track=new Track(name, tracks.get(i-1), script, path, startOrEnd, intensity, secondsOffset);
 				}
 				
 				script.addTrack(track);
