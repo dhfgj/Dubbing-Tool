@@ -72,6 +72,10 @@ public class WriteXML {
 				Element startOrEnd = doc.createElement("startOrEnd");
 				startOrEnd.appendChild(doc.createTextNode(String.valueOf(getInfo.getStart())));
 				track.appendChild(startOrEnd);
+				
+				Element secondsOffset = doc.createElement("secondsOffset");
+				secondsOffset.appendChild(doc.createTextNode(String.valueOf(getInfo.getSecondsOffset())));
+				track.appendChild(startOrEnd);
 
 
 			}
