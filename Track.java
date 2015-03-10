@@ -7,6 +7,10 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 
 public class Track {
@@ -322,6 +326,32 @@ public class Track {
 
 		return theGraph.drawGraph(0,0,myBytes.length,100);
 	}
+	
+	public int startTime() {
+		Track relative=this;
+		
+		int millis=-relative.getDurationMilliseconds();
+		
+		while (relative!=null) {
+			millis=millis + relative.getDurationMilliseconds();
+			relative=this.getRelativeTo();
+		}
+		
+		return (int) millis/1000;
+	}
+	
+	public int endTime() {
+		Track relative=this;
+		
+		int millis=0;
+		
+		while (relative!=null) {
+			millis=millis + relative.getDurationMilliseconds();
+			relative=this.getRelativeTo();
+		}
+		
+		return (int) millis/1000;
+	}
 
 	private static int range(byte[] theBytes){
 		int max=theBytes[0];
@@ -346,5 +376,23 @@ public class Track {
 	}
 	//	public void playTrack(){}
 	//	public Clip getPlayableClip(){}
+	
+	public static void main(String[] args) {
+    	Track baladev=new Track("...", null, "src/Baladev_39_s_Theme.wav");
+    	JFrame bello=new JFrame();
+    	
+    	bello.setSize(500,500);
+    	//JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
+    	JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
+        JPanel jPanel = new JPanel();
+        jPanel.add(jLabel);
+        bello.add(jPanel);
+        bello.setVisible(true);
+    	
+    }
 
 }
+
+
+
+    
