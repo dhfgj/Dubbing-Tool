@@ -549,9 +549,6 @@ public class MainScreen extends JFrame {
 
 				for (int counter=height/numRows;counter<height;counter+=height/numRows){
 
-					System.out.println((counter*numRows/height));
-
-
 					g2.drawLine(0, counter, width, counter);
 
 				}
