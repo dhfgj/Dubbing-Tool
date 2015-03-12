@@ -1,662 +1,412 @@
-import java.sql.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-import javax.swing.border.EtchedBorder;
-import javax.swing.event.*;
-import javax.swing.*;
-import java.awt.image.*;
-import java.awt.*;
-import java.util.*;
-import java.util.Date;
-import java.io.*;
-import javax.sound.sampled.*;
-public class MainScreen extends JFrame {
-	int startYPos=-2;
-	JPanel panel;
-	JPanel buttonPanel;
-	JButton playPause;
-	JButton edit;
-	JButton delete;
 
-	JPanel tracks;
-	JButton track;
+public class Track {
 
-	JMenuBar topMenu;
-	JSplitPane splitPane;
-	JSplitPane smallerSplitPane;
-	JScrollPane visualScroll;
-	JScrollPane trackScroll;
-	JScrollPane timelineScroll;
-	JPanel timeline;
-	JPanel visualReps;
-	Date now;
-	long startedAt;
-	long pausedAt;
-	JLabel[][] trackStats;
-	ArrayList<Track> sortedTracks;
-	Track selected;
-	JLabel[] trackImages;
+	private String trackName;
+	private String soundFile;
+	private File file;
+	private Clip clip;
+	private AudioInputStream stream;
+	private Track relativeTo;
+	private int intensity;
+	private Script myScript;
+	private boolean startOrEnd;
+	private int trackLength;
 
-	Script currentScript;
-	private ArrayList<Track> trackList;
-	
-	Clip clip=null;
-	int currentFrame;
-	private boolean previewing=false;
+	private int secondsOffset;
 
-	public MainScreen(Script newScript, JMenuBar menu) {
-		topMenu=menu;
-		currentScript=newScript;
-		this.setJMenuBar(topMenu);
-		initializeWithScript();
 
+	public int getSecondsOffset() {
+		return secondsOffset;
 	}
-	private void initializeWithScript(){
-		trackList=currentScript.getScriptTracks();
-		setTracks();
-		setTimeline();
-		setPictures();
-		setButtonPanel();
-		
-		panel=new JPanel();
-		panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
-		panel.setBorder(BorderFactory.createEmptyBorder(30,20,30,10));
-		panel.setBackground(new Color(204,229,255));
-		visualScroll=new JScrollPane(visualReps);
-		visualScroll.setPreferredSize(new Dimension(100,400));
-	
-		trackScroll=new JScrollPane(tracks);
-		//timelineScroll=new JScrollPane(timeline);
-		smallerSplitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT, visualScroll, timelineScroll);
-		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, trackScroll, visualScroll);
-		splitPane.setVisible(true);
-		smallerSplitPane.setVisible(true);
-		this.setJMenuBar(topMenu);
-		panel.add(buttonPanel);
-		panel.add(splitPane);
 
-		setDefaultLookAndFeelDecorated(true);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setContentPane(panel);
-		pack();
-		setSize(1000,1000);
-		setVisible(true); 
-
+	public void setSecondsOffset(int newSeconds) {
+		secondsOffset=newSeconds;
 	}
-	private void setButtonPanel(){
-		buttonPanel=new JPanel();
-		buttonPanel.setLayout(new BoxLayout(buttonPanel,BoxLayout.X_AXIS));
-		buttonPanel.setBackground(new Color(204,229,255));
-		playPause=new JButton(new ImageIcon("PlayButton.png"));
-		playPause.addActionListener(new PlayListener());
-		edit=new JButton("Edit");
-		edit.addActionListener(new EditButtonListener());
-		delete=new JButton("Delete");
-		delete.addActionListener(new DeleteButtonListener());
-		playPause.setEnabled(false);
-		edit.setEnabled(false);
-		delete.setEnabled(false);
-		buttonPanel.add(playPause);
-		buttonPanel.add(edit);
-		buttonPanel.add(delete);
-		buttonPanel.setAlignmentX( Component.LEFT_ALIGNMENT );
-	}
-	//sorts Tracks. 
 
-	private Time secondsToTime(int numSeconds){
-		int hours, minutes, seconds;
-		hours=numSeconds/3600;
-		minutes=(numSeconds-(hours*3600))/60;
-		seconds=numSeconds-(hours*3600)-(minutes*60);
-		return new Time(hours,minutes,seconds);
-	}
-	//Draws Scrollable Track List
-	private void setTracks(){
-		tracks=new JPanel();
-		JPanel labels=new JPanel();
-		JPanel trackChart=new TracksPanel();
-		trackChart.setLayout(new GridLayout(trackList.size(),5,20,20));
-		labels.setLayout(new BoxLayout(labels,BoxLayout.X_AXIS));
-		trackChart.setBackground(Color.white);
-		labels.setBackground(Color.white);
-
-		labels.add(new JLabel("File Name"));
-		labels.add(Box.createHorizontalGlue());
-		labels.add(Box.createRigidArea(new Dimension(10,0)));
-		labels.add(new JLabel("Start Time"));
-		labels.add(Box.createRigidArea(new Dimension(5,0)));
-		labels.add(Box.createHorizontalGlue());
-		labels.add(new JLabel("Relative to"));
-		labels.add(Box.createRigidArea(new Dimension(20,0)));
-		labels.add(Box.createHorizontalGlue());
-		labels.add(new JLabel("From"));
-		labels.add(Box.createRigidArea(new Dimension(20,0)));
-		labels.add(Box.createHorizontalGlue());
-		labels.add(new JLabel("Intensity"));
-		labels.add(Box.createHorizontalGlue());
-
-		trackStats=new JLabel[trackList.size()][5];
-
-		for (int counter=0;counter<trackList.size();counter++){
-			Track current=trackList.get(counter);
-			trackStats[counter][0]=new JLabel(current.getTrackName());
-			trackChart.add(trackStats[counter][0]);
-			trackStats[counter][1]=new JLabel("" + secondsToTime(current.getSecondsOffset()));
-			trackChart.add(trackStats[counter][1]);
-			if (current.getRelativeTo()!=null)
-				trackStats[counter][2]=new JLabel(current.getRelativeTo().getTrackName());
-			else
-				trackStats[counter][2]=new JLabel("Start of Script");
-			trackChart.add(trackStats[counter][2]);
-			String startOrEnd;
-			if (current.getStart())
-				startOrEnd="Start";
-			else
-				startOrEnd="End";
-			trackStats[counter][3]=new JLabel(startOrEnd);
-			trackChart.add(trackStats[counter][3]);
-			trackStats[counter][4]=new JLabel("" + current.getIntensity());
-			trackChart.add(trackStats[counter][4]);
+	private int getDurationSeconds() {
+		try {
+			return (int) (getDurationMilliseconds()/1000);
+		} catch(Exception e) {
+			
 		}
-		tracks.setLayout(new BoxLayout(tracks,BoxLayout.Y_AXIS));
-		tracks.add(labels);
-		tracks.add(trackChart);
-		trackSelect();
+		
+		return 0;
 	}
 
-	//Allows you to click on tracks
+	private int getDurationMilliseconds() {
+		try{	AudioInputStream input=AudioSystem.getAudioInputStream(file);
+		AudioFormat format=input.getFormat();
+		long fileLength=file.length();
+		int frames=format.getFrameSize();
+		float rate=format.getFrameRate();
+		float seconds=(fileLength/(frames * rate));
+		double milliseconds=seconds * 1000;
+		input.close();
+		return (int) milliseconds;}catch(Exception e){}
+		return 0;
+	}
+	public byte[] getBytes(int milliseconds) {
+		try{
+			ByteArrayOutputStream out=new ByteArrayOutputStream();
+			BufferedInputStream input=new BufferedInputStream(new FileInputStream(soundFile));
+			int reader;
+			byte[] buffer= new byte[(int)file.length()];
 
-	private void trackSelect(){
-		for (int counter1=0;counter1<trackList.size();counter1++){
-			for (int counter2=0;counter2<5;counter2++){
-				trackStats[counter1][counter2].addMouseListener(new TrackMouseListener());
+			while ((reader=input.read(buffer))>0) {
+				out.write(buffer, 0, reader);
 			}
-		}
-	}
-	//Finds track relative to start
 
-	private Track findFirstTrack(){
-		for (int counter=0;counter<trackList.size();counter++){
-			if (trackList.get(counter).getRelativeTo()==null){
-				return trackList.get(counter);
-			}
-		}
-		return null;
-	}
+			out.flush();
 
-	//Enter a track, gives array of tracks whose start times are relative to that track
-	private Track[] tracksRelativeTo(Track root){
-		ArrayList<Track> listTracks=new ArrayList<Track>();
-		Track[] relativeTracks;
-		int num=0;
-		for (int counter=0;counter<trackList.size();counter++){
-			if (trackList.get(counter).getRelativeTo()==root){
-				num++;
-				listTracks.add(trackList.get(counter));
-			}
-		}
-		relativeTracks=new Track[num];
-		for (int counter=0;counter<relativeTracks.length;counter++){
-			relativeTracks[counter]=listTracks.get(counter);
-		}
-		return relativeTracks;
-	}
+			byte[] allBytes=out.toByteArray();
+			int totalMillis=getDurationMilliseconds();
+			out=null;
+			input.close();
 
-	//This is what I started for displaying the pictures, but it doesn't work.
-	private void setPictures(){
-		
-		visualReps=new JPanel();
-		visualReps.setBackground(Color.WHITE);
-		visualReps.setLayout(null);
-		trackImages=new JLabel[trackList.size()];
-		
-		for (int counter=0;counter<trackList.size();counter++){
-			Track current=trackList.get(counter);
-			BufferedImage toPrint=current.generateGraphics();
-			trackImages[counter]=new JLabel(new ImageIcon(toPrint));
-			trackImages[counter].setBounds(secondsToPixels(current.startTime()),(counter*50),trackImages[counter].getPreferredSize().width,trackImages[counter].getPreferredSize().height);
-			trackImages[counter].repaint();
-			trackImages[counter].addMouseListener(new VisualMouseListener());
-			visualReps.add(trackImages[counter]);
-		}
-		
-		int farthestImage=0,index=0;
-		for (int counter=0;counter<trackImages.length;counter++){
-			if (trackImages[counter].getBounds().getX()>farthestImage){
-				farthestImage=(int)(trackImages[counter].getBounds().getX()+trackImages[counter].getBounds().getWidth());
-				index=counter;
-			}
-		}
-		int timelineLength=farthestImage+10;
-		
-		timeline.setBounds(0, 500, timelineLength, 100);
-		timeline.repaint();
-		visualReps.add(timeline);
-		visualReps.setPreferredSize(new Dimension(timelineLength,600));
-		
-	}
-	//Just draws the timeline panel.
 
-	private void setTimeline(){
-		timeline=new TimelinePanel();
-		timeline.setBackground(Color.WHITE);
-	
-	}
-
-	//Give it a time and it will convert it to the number of pixels that amount of time will take up.
-
-	private int timeToPixels(Time convert){
-		int hours=convert.getHours();
-		int minutes=convert.getMinutes();
-		int seconds=convert.getSeconds();
-		int totalSeconds=seconds + (minutes*60) + (hours*60*60);
-		return totalSeconds*5+10;
-	}
-
-	//This is to determine when someone clicks on the scrollable list which track they clicked on.
-
-	private Track findWhichTrack(JLabel label){
-
-		int rowIndex=0;
-
-		for (int counter=0;counter<trackList.size();counter++){
-
-			for (int counter2=0;counter2<5;counter2++){
-
-				if (trackStats[counter][counter2]==label){
-
-					rowIndex=counter;
-
+			if (totalMillis>milliseconds) {
+				int sampleSize=(int) totalMillis/milliseconds; 
+				byte[] sampleBytes=new byte[sampleSize];
+				for (int i=0; i<sampleSize; i++) {
+					sampleBytes[i]=allBytes[i * sampleSize];
 				}
-
-			}
-
-		}
-
-		String name=trackStats[rowIndex][0].getText();
-
-		for (int counter=0;counter<trackList.size();counter++){
-
-			if (trackList.get(counter).getTrackName().equals(name)){
-
-				return trackList.get(counter);
-
-			}
-
-		}
-
-		return null;
-
-	}
-
-	//Just to more easily break down a time into seconds.
-
-	private int timeToSeconds(Time time){
-
-		int seconds=time.getHours()*60*60 + time.getMinutes()*60 + time.getSeconds();
-
-		return seconds;
-
-	}
-
-	//Not that necessary, but this is the conversion from seconds to pixels.
-
-	private int secondsToPixels(int seconds){
-
-		return seconds*5+10;
-
-	}
-
-	class RightClickOptions extends JPopupMenu implements ActionListener {
-
-		Track currentTrack;
-
-		public RightClickOptions(Track current) {
-
-			JMenuItem editFromMenu=new JMenuItem("Edit");
-
-			editFromMenu.addActionListener(this);
-
-			JMenuItem deleteFromMenu=new JMenuItem("Delete");
-
-			deleteFromMenu.addActionListener(this);
-
-			add(editFromMenu);
-
-			add(deleteFromMenu);
-
-			currentTrack=current;
-
-		}
-
-		public void actionPerformed(ActionEvent e) {
-
-			if (e.getActionCommand().equals("Edit")) {
-
-				new TrackDialog(currentTrack);
-
-			} else if (e.getActionCommand().equals("Delete")) {
-
-				if (JOptionPane.YES_OPTION==JOptionPane.showConfirmDialog(null,"Are you sure?","Conformation", JOptionPane.YES_NO_OPTION)){
-
-					Script script=currentTrack.getScript();
-
-					script.deleteTrack(currentTrack);
-
-					currentScript=script;
-					
-					initializeWithScript();
-
-				} else {
-
-					//nothing happens here
-
-				}
-
-			}
-
-		}
-
-
-
-	}
-
-	public void playTrack(Track track, int frameStart) {
-			AudioInputStream sound=null;
-			File soundFile = new File(track.getPath());
-
-			try {
-				sound = AudioSystem.getAudioInputStream(soundFile);
-			} catch (UnsupportedAudioFileException e2) {
-				e2.printStackTrace();
-			} catch (IOException e2) {
-				e2.printStackTrace();
-			}
-			if (sound!=null){
-				DataLine.Info info = new DataLine.Info(Clip.class, sound.getFormat());
-
-				try {
-					clip = (Clip) AudioSystem.getLine(info);
-				} catch (LineUnavailableException e1) {
-					e1.printStackTrace();
-				}
-				try {
-					clip.open(sound);
-				} catch (LineUnavailableException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				clip.setFramePosition(frameStart);
-				/*clip.addLineListener(new LineListener() {
-	      public void update(LineEvent event) {
-	        if (event.getType() == LineEvent.Type.STOP) {
-	          event.getLine().close();
-	          System.exit(0);
-	          //this should probably open a popup
-	        }
-	      }
-	    });*/
-				clip.start();
-			}
-	}
-
-	//For the scrollable list, when someone clicks on it.
-
-	class TrackMouseListener extends MouseInputAdapter {
-		public void mouseClicked(MouseEvent e) {
-			if (e.getButton()==MouseEvent.BUTTON3){
-				//right click
-				previewing=false;
-				//startYPos=-100;
-				playPause.setEnabled(false);
-				edit.setEnabled(false);
-				delete.setEnabled(false);
-				pausedAt=-1;
-				startedAt=-2;
-				RightClickOptions rco= new RightClickOptions(findWhichTrack((JLabel)e.getComponent()));
-				rco.show(e.getComponent(), e.getX(), e.getY());
-			} else if (e.getClickCount()==1) {
-				//single click
-				if (findWhichTrack((JLabel)e.getComponent())!=selected){
-					previewing=false;
-					pausedAt=-1;
-					startedAt=-2;
-					selected=findWhichTrack((JLabel)e.getComponent());
-				} for (int i=0; i<trackList.size(); i++) {
-
-					if (selected.equals(trackList.get(i))) {
-						for (int m=0; m<5; m++) {
-							trackStats[i][m].setBorder(new EtchedBorder() {
-								private static final long serialVersionUID = 1L;
-
-								@Override
-								public Insets getBorderInsets(Component c, Insets insets){
-									// arbitrary insets for top and bottom.
-									return new Insets(insets.top - 10,
-											insets.left, insets.bottom - 10, insets.right);
-								}});
-
-						}
-					} else {
-						for (int m=0; m<5; m++) {
-							trackStats[i][m].setBorder(BorderFactory.createEmptyBorder());
-						}
-					}
-					tracks.repaint();
-
-				}
-				playPause.setEnabled(true);
-				edit.setEnabled(true);
-				delete.setEnabled(true);
-			} else if (e.getClickCount()==2) {
-				//double click
-				previewing=false;
-				//startYPos=-100;
-				playPause.setEnabled(false);
-				edit.setEnabled(false);
-				delete.setEnabled(false);
-				pausedAt=-1;
-				startedAt=-2;
-				selected=findWhichTrack((JLabel)e.getComponent());
-				new TrackDialog(selected);
-			}
-			String trackn="";
-			if (selected==null) {
-				trackn="null";
+				return sampleBytes;
 			} else {
-				trackn=selected.getTrackName();
+				return allBytes;
 			}
+		}catch(Exception e){}
+		return new byte[1];
+	}
 
-		}
+	public Track(String myName, Track relative, Script host,String newPath, boolean beginning,int newIntensity) {
+		trackName=myName;
+		relativeTo=relative;
+		startOrEnd=beginning;
+		intensity=newIntensity;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=0;
 	}
-	private Track whichTrack(JLabel label){
-		for (int counter=0;counter<trackImages.length;counter++){
-			if (label.getIcon()==trackImages[counter].getIcon()){
-				return trackList.get(counter);
-			}
-		}
-		return null;
+	public Track(String myName, Track relative, Script host,String newPath) {
+		trackName=myName;
+		relativeTo=relative;
+
+		intensity=100;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		startOrEnd=true;
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=0;
 	}
-	class VisualMouseListener extends MouseInputAdapter{
-		public void mouseClicked(MouseEvent e) {
-			if (e.getButton()==MouseEvent.BUTTON3){
-				//right click
-				previewing=false;
-				//startYPos=-100;
-				playPause.setEnabled(false);
-				edit.setEnabled(false);
-				delete.setEnabled(false);
-				pausedAt=-1;
-				startedAt=-2;
-				RightClickOptions rco= new RightClickOptions(findWhichTrack((JLabel)e.getComponent()));
-				rco.show(e.getComponent(), e.getX(), e.getY());
-			}else if (e.getClickCount()==2) {
-				previewing=false;
-                pausedAt=-1;
-                startedAt=-2;
-                Track selected=null;
-                String selectedName=null;
-                int x=e.getX();
-                int y=e.getY();
-                selected=findWhichTrack((JLabel)e.getComponent());
-                new TrackDialog(selected);
-			}else if (e.getClickCount()==1){
-				JLabel currentLabel=(JLabel)e.getComponent();
-				selected=whichTrack(currentLabel);
-				playPause.setEnabled(true);
-				edit.setEnabled(true);
-				delete.setEnabled(true);
-			}
-		}
+	public Track(String myName, Track relative, Script host,String newPath,boolean beginning) {
+		trackName=myName;
+
+		relativeTo=relative;
+		startOrEnd=beginning;
+
+		intensity=100;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=0;
 	}
-	class VisualPanel extends JPanel{
-		public void paintComponent(Graphics g){
-			super.paintComponent(g);
+	public Track(String myName, Track relative, Script host,String newPath,int newIntensity) {
+		trackName=myName;
+
+		relativeTo=relative;
+
+		intensity=newIntensity;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		startOrEnd=true;
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=0;
+	}
+
+
+	public Track(String myName, Script host, int newIntensity, String newPath, boolean beginning) {
+		trackName=myName;
+		relativeTo=this;
+		startOrEnd=beginning;
+		intensity=newIntensity;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=0;
+	}
+	public Track(String myName, Script host,String newPath) {
+		trackName=myName;
+		relativeTo=this;
+
+		intensity=100;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		startOrEnd=true;
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=0;
+	}
+	public Track(String myName, Script host,String newPath,boolean beginning) {
+		trackName=myName;
+
+		relativeTo=this;
+		startOrEnd=beginning;
+
+		intensity=100;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=0;
+	}
+	public Track(String myName, Script host,String newPath, int newIntensity) {
+		trackName=myName;
+
+		relativeTo=this;
+
+		intensity=newIntensity;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		startOrEnd=true;
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=0;
+	}
+
+	public Track(String myName, Track relative, Script host,String newPath, boolean beginning,int newIntensity, int newSeconds) {
+		trackName=myName;
+		relativeTo=relative;
+		startOrEnd=beginning;
+		intensity=newIntensity;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=newSeconds;
+	}
+	public Track(String myName, Track relative, Script host, int newSeconds, String newPath) {
+		trackName=myName;
+		relativeTo=relative;
+
+		intensity=100;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		startOrEnd=true;
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=newSeconds;
+	}
+	public Track(String myName, Track relative, Script host,String newPath, int newSeconds, boolean beginning) {
+		trackName=myName;
+
+		relativeTo=relative;
+		startOrEnd=beginning;
+
+		intensity=100;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=newSeconds;
+	}
+	public Track(String myName, Track relative, Script host,String newPath,int newIntensity, int newSeconds) {
+		trackName=myName;
+
+		relativeTo=relative;
+
+		intensity=newIntensity;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		startOrEnd=true;
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=newSeconds;
+	}
+
+
+	public Track(String myName, Script host,String newPath, boolean beginning,int newIntensity, int newSeconds) {
+		trackName=myName;
+		relativeTo=this;
+		startOrEnd=beginning;
+		intensity=newIntensity;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=newSeconds;
+	}
+	public Track(String myName, Script host, int newSeconds, String newPath) {
+		trackName=myName;
+		relativeTo=this;
+
+		intensity=100;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		startOrEnd=true;
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=newSeconds;
+	}
+	public Track(String myName, Script host,String newPath,boolean beginning, int newSeconds) {
+		trackName=myName;
+
+		relativeTo=this;
+		startOrEnd=beginning;
+
+		intensity=100;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=newSeconds;
+	}
+	public Track(String myName, Script host,String newPath,int newIntensity, int newSeconds) {
+		trackName=myName;
+
+		relativeTo=this;
+
+		intensity=newIntensity;
+		myScript=host;
+		soundFile=newPath;
+		file=new File(soundFile);
+		startOrEnd=true;
+		trackLength=getDurationMilliseconds()/1000;
+		secondsOffset=newSeconds;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	public boolean getStart() {
+		return startOrEnd;
+	}
+	public void setStart(boolean newStart){
+		startOrEnd=newStart;
+	}
+	public void changeIntensity(int newIntensity){intensity=newIntensity;}
+	public Track getRelativeTo(){return relativeTo;}
+	public void setRelativeTo(Track newRelative){relativeTo=newRelative;}
+	public int getLength(){return trackLength;}
+	public int getIntensity(){return intensity;}
+	public void setIntensity(int newIntensity){intensity=newIntensity;}
+	public String getTrackName(){return trackName;}
+	public Script getScript(){return myScript;}
+	public String getPath(){return soundFile;}
+	
+	public BufferedImage generateGraphics(){
+		byte[] myBytes=getBytes(200);
+		Coordinate[] theseCoords=new Coordinate[myBytes.length];
+		for(int i=0;i<myBytes.length;i++){
+			theseCoords[i]=new Coordinate(i, myBytes[i]);
+		}
+
+		double rangeNum=(double)range(myBytes);
+		double smallNum=(double)minNum(myBytes);
+		XYGrapher theGraph=new XYGrapher(smallNum,rangeNum,myBytes.length*100,theseCoords);
+
+		return theGraph.drawGraph(0,0,myBytes.length*100,100);
+	}
+	
+	public int startTime() {
+		Track relative=this;
+		Track next=null;
+		
+		int millis=-relative.getDurationMilliseconds();
+		
+		while (relative!=next) {
+			millis=millis + relative.getDurationMilliseconds();
+			next=this;
+			relative=this.getRelativeTo();
 			
 		}
+		
+		return (int) millis/1000;
 	}
-	//Draws the chart for the tracks
-	class TracksPanel extends JPanel{
-
-		public void paintComponent(Graphics g){
-
-			super.paintComponent(g);
-
-			Graphics2D g2=(Graphics2D)g;
-
-			int width,height;
-
-			width=getWidth();
-
-			height=getHeight();
-
-			int incrimentW=width/5;
-
-			g2.drawLine(0, 0, width, 0);
-
-			for (int counter=width/5;counter<width;counter+=width/5){
-
-				g2.drawLine(counter, 0, counter, height);
-
-			}
-
-			GridLayout layout=(GridLayout)getLayout();
-
-			int numRows=layout.getRows();
-
-			if (trackList.size()!=0){
-
-				for (int counter=height/numRows;counter<height;counter+=height/numRows){
-
-					g2.drawLine(0, counter, width, counter);
-
-				}
-
-			}
-
+	
+	public int endTime() {
+		Track relative=this;
+		
+		int millis=0;
+		
+		while (relative!=null) {
+			millis=millis + relative.getDurationMilliseconds();
+			relative=this.getRelativeTo();
 		}
-
+		
+		return (int) millis/1000;
 	}
 
-	//This works but it isn't in components it's just drawn so I don't think they can be clicked on. A different method of drawing the pictures.
-	//Draws the timeline
-	class TimelinePanel extends JPanel{
-		public void paintComponent(Graphics g){
-			super.paintComponent(g);
-			Graphics2D g2=(Graphics2D)g;
-			int width=getWidth();
-			int height=getHeight();
-			g2.setStroke(new BasicStroke(3));
-			g2.drawLine(5,height/2,width-5,height/2);
-			g2.drawLine(5, height/2-5, 5, height/2+5);
-			int numSeconds=0, numMinutes=0, numHours=0;
-			g2.setStroke(new BasicStroke(1));
-			String secondString;
-			for (int counter=10;counter<width-5;counter+=5){
-				if (numSeconds==30){
-					g2.drawLine(counter, height/2-10, counter, height/2+10);
-					if (numSeconds<10)
-						secondString="0" + numSeconds;
-					else
-						secondString=numSeconds + "";
-					g2.drawString(numMinutes + ":" + secondString, counter-13, height/2+30);
-				}else if (numSeconds==60){
-					g2.setStroke(new BasicStroke(2));
-					g2.drawLine(counter, height/2-15, counter, height/2+15);
-					numSeconds=0;
-					g2.setStroke(new BasicStroke(1));
-					numMinutes++;
-					if (numMinutes%60==0)
-						numHours++;
-					if (numSeconds<10)
-						secondString="0" + numSeconds;
-					else
-						secondString=numSeconds + "";
-					g2.drawString(numMinutes + ":" + secondString, counter-13, height/2+30);
-				}else{
-					g2.drawLine(counter, height/2-5, counter, height/2+5);
-				}
-				numSeconds++;
+	private static int range(byte[] theBytes){
+		int max=theBytes[0];
+		int min=theBytes[0];
+		for(int i=0;i<theBytes.length;i++){
+			if(theBytes[i]>max){
+				max=theBytes[i];
+			}else if(theBytes[i]<min){
+				min=theBytes[i];
 			}
 		}
+		return (max-min)+1;
 	}
-	//this is for the play/pause button. I don't know how to pause it yet.
-	class PlayListener implements ActionListener{
-		public void actionPerformed(ActionEvent e){
-			if (!previewing){
-				if (pausedAt>0 & pausedAt<selected.getLength()) {
-					//clip allows users to specify from where they should start playing
-				} else {
-					now=new Date();
-					startedAt=now.getTime();
-					if (clip==null||currentFrame==clip.getFrameLength())
-						currentFrame=0;
-					playTrack(selected, currentFrame);
-					//this has to be changed too
-				}
-				playPause.setIcon(new ImageIcon("PauseButton.png"));
-				previewing=true;
-
-			}else{
-				playPause.setIcon(new ImageIcon("PlayButton.png"));
-				previewing=false;
-				now=new Date();
-				pausedAt=now.getTime()-startedAt;
-				if (clip.isActive()){
-					currentFrame=clip.getFramePosition();
-					clip.stop();
-				}
+	private static int minNum(byte[] theBytes){
+		int min=theBytes[0];
+		for(int i=0;i<theBytes.length;i++){
+			if(theBytes[i]<min){
+				min=theBytes[i];
 			}
 		}
+		return min;
 	}
-	class EditButtonListener implements ActionListener{
-		public void actionPerformed(ActionEvent e){
-			new TrackDialog(selected);
-		}
-	}
-	class DeleteButtonListener implements ActionListener{
-		public void actionPerformed(ActionEvent e){
-			currentScript.deleteTrack(selected);
-			if (JOptionPane.YES_OPTION==JOptionPane.showConfirmDialog(null,"Are you sure?","Conformation", JOptionPane.YES_NO_OPTION)){
+	//	public void playTrack(){}
+	//	public Clip getPlayableClip(){}
+	
+	/*public static void main(String[] args) {
+    	Track baladev=new Track("...", null, "src/(100) Daft Punk - Lose Yourself to Dance.wav");
+    	JFrame bello=new JFrame();
+    	
+    	bello.setSize(500,500);
+    	bello.setBackground(Color.BLACK);
+    	//JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
+    	JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
+        JPanel jPanel = new JPanel();
+        
+        jPanel.setBackground(Color.CYAN);
+        jPanel.add(jLabel);
+        bello.add(jPanel);
+        bello.setVisible(true);*/
+    	
+    }
 
-				Script script=selected.getScript();
-
-				script.deleteTrack(selected);
-
-				currentScript=script;
-				
-				initializeWithScript();
-
-			} else {
-
-				//nothing happens here
-
-			}
-			
-
-			
-			
-		}
-	}
 }
+
+
+
+    
