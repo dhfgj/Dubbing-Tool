@@ -103,22 +103,6 @@ public class MainScreen extends JFrame {
 	}
 	//sorts Tracks. 
 
-	private void sortTracks(ArrayList<Track> list) {
-		String trackNamePlaceholder=null;
-		ArrayList<Track> orderedTracks=new ArrayList();
-		int[] startTimes=new int[trackList.size()];
-		Track first=findFirstTrack();
-		orderedTracks.add(first);
-
-		for (Track track: trackList) {
-			if (track.getRelativeTo()!=null){
-
-			} else {
-				sortedTracks.set(0, track);
-
-			}
-		}
-	}
 	private Time secondsToTime(int numSeconds){
 		int hours, minutes, seconds;
 		hours=numSeconds/3600;
@@ -239,14 +223,12 @@ public class MainScreen extends JFrame {
 		int farthestImage=0,index=0;
 		for (int counter=0;counter<trackImages.length;counter++){
 			if (trackImages[counter].getBounds().getX()>farthestImage){
-				farthestImage=(int)trackImages[counter].getBounds().getX();
+				farthestImage=(int)(trackImages[counter].getBounds().getX()+trackImages[counter].getBounds().getWidth());
 				index=counter;
 			}
 		}
-		int timelineLength=farthestImage+300;
-		if (timelineLength%30<3){
-			timelineLength+=10;
-		}
+		int timelineLength=farthestImage+10;
+		
 		timeline.setBounds(0, 500, timelineLength, 100);
 		timeline.repaint();
 		visualReps.add(timeline);
@@ -420,7 +402,31 @@ public class MainScreen extends JFrame {
 	}
 
 	//For the scrollable list, when someone clicks on it.
+	private void highlightTrack(){
+		for (int i=0; i<trackList.size(); i++) {
 
+			if (selected.equals(trackList.get(i))) {
+				for (int m=0; m<5; m++) {
+					trackStats[i][m].setBorder(new EtchedBorder() {
+						private static final long serialVersionUID = 1L;
+
+						@Override
+						public Insets getBorderInsets(Component c, Insets insets){
+							// arbitrary insets for top and bottom.
+							return new Insets(insets.top - 10,
+									insets.left, insets.bottom - 10, insets.right);
+						}});
+
+				}
+			} else {
+				for (int m=0; m<5; m++) {
+					trackStats[i][m].setBorder(BorderFactory.createEmptyBorder());
+				}
+			}
+			tracks.repaint();
+
+		}
+	}
 	class TrackMouseListener extends MouseInputAdapter {
 		public void mouseClicked(MouseEvent e) {
 			if (e.getButton()==MouseEvent.BUTTON3){
@@ -441,29 +447,9 @@ public class MainScreen extends JFrame {
 					pausedAt=-1;
 					startedAt=-2;
 					selected=findWhichTrack((JLabel)e.getComponent());
-				} for (int i=0; i<trackList.size(); i++) {
-
-					if (selected.equals(trackList.get(i))) {
-						for (int m=0; m<5; m++) {
-							trackStats[i][m].setBorder(new EtchedBorder() {
-								private static final long serialVersionUID = 1L;
-
-								@Override
-								public Insets getBorderInsets(Component c, Insets insets){
-									// arbitrary insets for top and bottom.
-									return new Insets(insets.top - 10,
-											insets.left, insets.bottom - 10, insets.right);
-								}});
-
-						}
-					} else {
-						for (int m=0; m<5; m++) {
-							trackStats[i][m].setBorder(BorderFactory.createEmptyBorder());
-						}
-					}
-					tracks.repaint();
-
-				}
+				} 
+				
+				highlightTrack();
 				playPause.setEnabled(true);
 				edit.setEnabled(true);
 				delete.setEnabled(true);
@@ -509,30 +495,24 @@ public class MainScreen extends JFrame {
 				startedAt=-2;
 				RightClickOptions rco= new RightClickOptions(findWhichTrack((JLabel)e.getComponent()));
 				rco.show(e.getComponent(), e.getX(), e.getY());
+				
 			}else if (e.getClickCount()==2) {
 				previewing=false;
-				pausedAt=-1;
-				startedAt=-2;
-				Track selected=null;
-				String selectedName=null;
-				int x=e.getX();
-				int y=e.getY();
-				for (int i=1; i<=trackList.size(); i++) {
-					if (y<getHeight()*i/trackList.size() && y>getHeight()*(i-1)/trackList.size()) {
-						selected=trackList.get(i-1);
-						if (x<secondsToPixels(selected.startTime()+selected.getLength())&& x>secondsToPixels(selected.startTime())){
-							new TrackDialog(selected);
-						}
-						//need to double check parameters of the click area
-
-					}
-				}
+                pausedAt=-1;
+                startedAt=-2;
+                Track selected=null;
+                String selectedName=null;
+                int x=e.getX();
+                int y=e.getY();
+                selected=findWhichTrack((JLabel)e.getComponent());
+                new TrackDialog(selected);
 			}else if (e.getClickCount()==1){
 				JLabel currentLabel=(JLabel)e.getComponent();
 				selected=whichTrack(currentLabel);
 				playPause.setEnabled(true);
 				edit.setEnabled(true);
 				delete.setEnabled(true);
+				highlightTrack();
 			}
 		}
 	}
@@ -574,9 +554,6 @@ public class MainScreen extends JFrame {
 			if (trackList.size()!=0){
 
 				for (int counter=height/numRows;counter<height;counter+=height/numRows){
-
-					System.out.println((counter*numRows/height));
-
 
 					g2.drawLine(0, counter, width, counter);
 
