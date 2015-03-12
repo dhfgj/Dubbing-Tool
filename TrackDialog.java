@@ -1,3 +1,4 @@
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -7,26 +8,33 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.net.URL;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Time;
 import java.util.ArrayList;
-
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JTextArea;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
-
 import javax.sound.sampled.*;
 
-public class TrackDialog extends JFrame implements ActionListener {
+public class TrackDialog extends JFrame implements ActionListener, MouseListener {
 	Track theTrack;
 	Track initialTrack;
 	JFrame frame;
@@ -39,15 +47,16 @@ public class TrackDialog extends JFrame implements ActionListener {
 	ButtonGroup startEndGroup;
 	JFrame previewWindow; 
 	Clip clip;
-	
+	Timer clipTimer;
+
 	public TrackDialog(Track track){
 
 		theTrack = track;
 		initialTrack = track;
 
 		frame = new JFrame(track.getTrackName());
-		frame.setSize(400, 180);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(500, 180);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		contentPane = new JPanel();
 		contentPane.setLayout(new GridBagLayout());
 
@@ -65,6 +74,7 @@ public class TrackDialog extends JFrame implements ActionListener {
 		c.gridx = 0;
 		c.gridy = 0;
 		theTrackName = new JLabel(theTrack.getTrackName());
+		theTrackName.addMouseListener(this);
 		contentPane.add(theTrackName, c);
 
 		c.insets = new Insets(0, 5, 0, 0);
@@ -72,6 +82,7 @@ public class TrackDialog extends JFrame implements ActionListener {
 		c.gridx = 1;
 		c.gridy = 0;
 		relativeTrackName = new JLabel(theTrack.getRelativeTo().getTrackName());
+		relativeTrackName.addMouseListener(this);
 		contentPane.add(relativeTrackName, c);
 	}
 	public void drawIntensity(){
@@ -159,6 +170,7 @@ public class TrackDialog extends JFrame implements ActionListener {
 	}
 	public void actionPerformed(ActionEvent e) {
 		String actionCommand = e.getActionCommand();
+
 		if (actionCommand.equals("Start")){
 			theTrack.setStart(true);
 		} else {
@@ -197,39 +209,76 @@ public class TrackDialog extends JFrame implements ActionListener {
 		}
 	}
 	public void preview(){
-		
+		clipTimer = new Timer(theTrack.getDurationMilliseconds(), this);
+		clipTimer.setActionCommand("Cancel Preview");
+		clipTimer.addActionListener(this);
+
 		previewWindow = new JFrame(theTrack.getTrackName());
 		previewWindow.setSize(400, 180);
-		previewWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		previewWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		previewWindow.setVisible(true);
-		
+
 		JButton cancel = new JButton("Cancel");
 		cancel.setActionCommand("Cancel Preview");
 		cancel.addActionListener(this);
 		previewWindow.add(cancel);
-		
-		  try {
-		         // Use URL (instead of File) to read from disk and JAR.
-		         File file = new File(theTrack.getPath());
-		         // Set up an audio input stream piped from the sound file.
-		         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
-		         // Get a clip resource.
-		         clip = AudioSystem.getClip();
-		         // Open audio clip and load samples from the audio input stream.
-		         clip.open(audioInputStream);
 
-		         clip.setFramePosition(0);
-				 clip.start();
-		      } catch (UnsupportedAudioFileException e) {
-		         e.printStackTrace();
-		      } catch (IOException e) {
-		         e.printStackTrace();
-		      } catch (LineUnavailableException e) {
-		         e.printStackTrace();
-		      }
-		  
+		try {
+			File file = new File(theTrack.getPath());
+			AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
+			clip = AudioSystem.getClip();
+			clip.open(audioInputStream);
+			clip.setFramePosition(0);
+			clip.start();
+			clipTimer.start();
+		} catch (UnsupportedAudioFileException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (LineUnavailableException e) {
+			e.printStackTrace();
+		}
+
 	}
 	public static void main(String[] args){
-		TrackDialog test = new TrackDialog(new Track("Test", new Script("Test Script", "C:\\Users\\Andrew\\workspace\\DubbingTool"), "C:\\Users\\Andrew\\workspace\\DubbingTool\\src\\Test.wav"));
+		TrackDialog test = new TrackDialog(new Track("Test", new Script("Test Script", "Z:\\My Documents\\DubbingTool\\src"), "Z:\\My Documents\\DubbingTool\\src\\Test.wav"));
 	}
+	public void mouseClicked(MouseEvent arg0) {
+
+	}
+	public void mouseEntered(MouseEvent arg0) {
+
+	}
+	public void mouseExited(MouseEvent arg0) {
+
+	}
+	public void mousePressed(MouseEvent e) {
+		if (e.getSource() == relativeTrackName){
+			JFrame openTrack = new JFrame();
+			openTrack.setSize(200, 500);
+			openTrack.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			openTrack.setVisible(true);
+
+			JPanel contentPane = new JPanel();
+			contentPane.setLayout(new GridLayout(theTrack.getScript().getScriptTracks().size() + 2, 1));
+
+			JLabel tracks = new JLabel("Tracks:");
+			contentPane.add(tracks);
+			JLabel beginningOfScript = new JLabel("Beginning of Scipt");
+			contentPane.add(beginningOfScript);
+
+			for(int i = 0; i < theTrack.getScript().getScriptTracks().size(); i++){
+				JLabel trackName = new JLabel(theTrack.getScript().getScriptTracks().get(i).getTrackName());
+				trackName.addMouseListener(this);
+				contentPane.add(trackName);
+			}
+			
+			openTrack.setContentPane(contentPane);
+			openTrack.setVisible(true);
+		}
+	}
+	public void mouseReleased(MouseEvent arg0) {
+
+	}
+
 }
