@@ -13,7 +13,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class ReadXML {
 
-	public static void test() {
+	//ReadXML DRIVER BELOW
+	/*public static void test() {
 
 		try {
 			File xmlFile=new File ("Z:\\AOOD\\TEST3.xml");
@@ -47,7 +48,7 @@ public class ReadXML {
 			e.printStackTrace();
 		}
 
-	}
+	}*/
 	
 	public static Script openXMLNewScript(String filePath) {
 		
@@ -132,14 +133,14 @@ public class ReadXML {
 	
 	
 
-	
-	public static void main(String[] args) {
+	//Test for Read XML Below
+	/*public static void main(String[] args) {
 		test();
 		
 		//Uncomment For Testing
-		/*System.out.println("\n\n\n.......");
+		System.out.println("\n\n\n.......");
 		Script happy=openXMLNewScript("Z:\\AOOD\\ReadingTEST3.xml");
-		*/
-	}
+		
+	}*/
 
 }
