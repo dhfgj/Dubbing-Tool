@@ -51,12 +51,6 @@ public class MainScreen extends JFrame {
 		initializeWithScript();
 
 	}
-	
-		public void updateMainScreen() {
-		trackList=currentScript.getScriptTracks();
-		initializeWithScript();
-	}
-	
 	private void initializeWithScript(){
 		trackList=currentScript.getScriptTracks();
 		setTracks();
@@ -224,8 +218,9 @@ public class MainScreen extends JFrame {
 		for (int counter=0;counter<trackList.size();counter++){
 			Track current=trackList.get(counter);
 			BufferedImage toPrint=current.generateGraphics();
-			trackImages[counter]=new JLabel(new ImageIcon(toPrint));
-			trackImages[counter].setBounds(secondsToPixels(current.startTime()),(counter*50),trackImages[counter].getPreferredSize().width,trackImages[counter].getPreferredSize().height);
+			trackImages[counter]=new JLabel(new ImageIcon(toPrint));			
+			trackImages[counter].setBorder(BorderFactory.createTitledBorder(current.getTrackName()));
+			trackImages[counter].setBounds(secondsToPixels(current.startTime()),(counter*120),trackImages[counter].getPreferredSize().width,trackImages[counter].getPreferredSize().height);
 			trackImages[counter].repaint();
 			trackImages[counter].addMouseListener(new VisualMouseListener());
 			visualReps.add(trackImages[counter]);
@@ -242,6 +237,8 @@ public class MainScreen extends JFrame {
 		if (timelineLength%30<3){
 			timelineLength+=10;
 		}
+		
+		
 		
 		visualReps.setPreferredSize(new Dimension(timelineLength,600));
 
