@@ -51,6 +51,12 @@ public class MainScreen extends JFrame {
 		initializeWithScript();
 
 	}
+	
+		public void updateMainScreen() {
+		trackList=currentScript.getScriptTracks();
+		initializeWithScript();
+	}
+	
 	private void initializeWithScript(){
 		trackList=currentScript.getScriptTracks();
 		setTracks();
