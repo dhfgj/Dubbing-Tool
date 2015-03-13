@@ -34,7 +34,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
 
 import javax.sound.sampled.*;
-public class TrackDialog extends JFrame implements ActionListener, MouseListener {
+
+// To do: make sure preview quits at end of track, set volume of preview based on intensity (0-100 -> -80-6)
+
+public class TrackDialog extends JFrame implements ActionListener, MouseListener, ChangeListener {
 	Track theTrack;
 	Track initialTrack;
 	JFrame frame;
@@ -106,6 +109,7 @@ public class TrackDialog extends JFrame implements ActionListener, MouseListener
 		changeIntensity.setMinorTickSpacing(1);
 		changeIntensity.setPaintTicks(true);
 		changeIntensity.setPaintLabels(true);
+		changeIntensity.addChangeListener(this);
 		contentPane.add(changeIntensity, c);
 
 	}
@@ -294,6 +298,7 @@ public class TrackDialog extends JFrame implements ActionListener, MouseListener
 				for (int i = 0; i < trackNames.size(); i++){
 					if (e.getSource() == trackNames.get(i)){
 						theTrack.setRelativeTo(theTrack.getScript().getScriptTracks().get(i));
+						relativeTrackName.setText(theTrack.getScript().getScriptTracks().get(i).getTrackName());
 					}
 				}
 			}
