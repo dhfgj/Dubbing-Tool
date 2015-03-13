@@ -32,8 +32,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
-import javax.sound.sampled.*;
 
+import javax.sound.sampled.*;
 public class TrackDialog extends JFrame implements ActionListener, MouseListener {
 	Track theTrack;
 	Track initialTrack;
@@ -48,6 +48,10 @@ public class TrackDialog extends JFrame implements ActionListener, MouseListener
 	JFrame previewWindow; 
 	Clip clip;
 	Timer clipTimer;
+	ArrayList<JLabel> trackNames = new ArrayList<JLabel>();
+	boolean openBoolean;
+	int returnOpenVal;
+	File openFile;
 
 	public TrackDialog(Track track){
 
@@ -204,7 +208,7 @@ public class TrackDialog extends JFrame implements ActionListener, MouseListener
 	}
 	public void stateChanged(ChangeEvent e) {
 		JSlider source = (JSlider)e.getSource();
-		if (!source.getValueIsAdjusting()) {
+		if (!source.getValueIsAdjusting()){
 			theTrack.setIntensity((int)source.getValue());
 		}
 	}
@@ -253,32 +257,76 @@ public class TrackDialog extends JFrame implements ActionListener, MouseListener
 
 	}
 	public void mousePressed(MouseEvent e) {
-		if (e.getSource() == relativeTrackName){
-			JFrame openTrack = new JFrame();
-			openTrack.setSize(200, 500);
-			openTrack.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-			openTrack.setVisible(true);
-
-			JPanel contentPane = new JPanel();
-			contentPane.setLayout(new GridLayout(theTrack.getScript().getScriptTracks().size() + 2, 1));
-
-			JLabel tracks = new JLabel("Tracks:");
-			contentPane.add(tracks);
-			JLabel beginningOfScript = new JLabel("Beginning of Scipt");
-			contentPane.add(beginningOfScript);
-
-			for(int i = 0; i < theTrack.getScript().getScriptTracks().size(); i++){
-				JLabel trackName = new JLabel(theTrack.getScript().getScriptTracks().get(i).getTrackName());
-				trackName.addMouseListener(this);
-				contentPane.add(trackName);
+		if (e.getSource() == theTrackName){
+			openBoolean=true;
+			FileChooser chooser=new FileChooser();
+			if(returnOpenVal==JFileChooser.APPROVE_OPTION){
+				openFile=chooser.getChooser().getSelectedFile();
 			}
-			
-			openTrack.setContentPane(contentPane);
-			openTrack.setVisible(true);
+		}
+		else {
+			if (e.getSource() == relativeTrackName){
+				JFrame openTrack = new JFrame();
+				openTrack.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				openTrack.setVisible(true);
+
+				JPanel contentPane = new JPanel();
+				contentPane.setLayout(new GridLayout(theTrack.getScript().getScriptTracks().size() + 2, 1));
+
+				JLabel tracks = new JLabel("Tracks:");
+				tracks.setPreferredSize(new Dimension(500, 10));
+				contentPane.add(tracks);
+				JLabel beginningOfScript = new JLabel("Beginning of Script");
+				tracks.setPreferredSize(new Dimension(500, 10));
+				contentPane.add(beginningOfScript);
+
+				for(int i = 0; i < theTrack.getScript().getScriptTracks().size(); i++){
+					JLabel trackName = new JLabel(theTrack.getScript().getScriptTracks().get(i).getTrackName());
+					trackName.addMouseListener(this);
+					trackNames.add(trackName);
+					contentPane.add(trackName);
+				}
+
+				openTrack.setSize(200, 50 * (theTrack.getScript().getScriptTracks().size() + 2));
+				openTrack.setContentPane(contentPane);
+				openTrack.setVisible(true);
+			} else {
+				for (int i = 0; i < trackNames.size(); i++){
+					if (e.getSource() == trackNames.get(i)){
+						theTrack.setRelativeTo(theTrack.getScript().getScriptTracks().get(i));
+					}
+				}
+			}
 		}
 	}
 	public void mouseReleased(MouseEvent arg0) {
 
 	}
+	public class FileChooser extends JPanel implements ActionListener{
+		JFileChooser chooser;
+		JTextArea log;
+		public FileChooser(){
+			super(new BorderLayout());
+			log = new JTextArea(5,20);
+			log.setMargin(new Insets(5,5,5,5));
+			log.setEditable(false);
+			JScrollPane logScrollPane = new JScrollPane(log);
+			chooser=new JFileChooser();
+			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+			FileNameExtensionFilter filter=new FileNameExtensionFilter("XML File", "xml");
+			chooser.setFileFilter(filter);
+			add(logScrollPane, BorderLayout.CENTER);
+			if(openBoolean){
+				returnOpenVal = chooser.showOpenDialog(FileChooser.this);
+				openBoolean=false;
+			}
+		}
+		public void actionPerformed(ActionEvent arg0) {
 
+		}
+		public JFileChooser getChooser(){
+			return chooser;
+		}
+
+	}
 }
