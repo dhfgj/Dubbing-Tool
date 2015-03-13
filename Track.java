@@ -336,7 +336,10 @@ public class Track {
 	}
 	
 	public int startTime() {
-		Track relative=this;
+		
+		//	NEEDS TO BE FIXED 
+		
+		/*Track relative=this;
 		Track next=null;
 		
 		int millis=-relative.getDurationMilliseconds();
@@ -348,11 +351,15 @@ public class Track {
 			
 		}
 		
-		return (int) millis/1000;
+		return (int) millis/1000;*/
+		return 0;
 	}
 	
 	public int endTime() {
-		Track relative=this;
+		
+		//NEEDS TO BE FIXED
+		
+		/*Track relative=this;
 		
 		int millis=0;
 		
@@ -361,7 +368,8 @@ public class Track {
 			relative=this.getRelativeTo();
 		}
 		
-		return (int) millis/1000;
+		return (int) millis/1000;*/
+		return 0;
 	}
 
 	private static int range(byte[] theBytes){
