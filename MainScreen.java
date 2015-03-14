@@ -241,7 +241,7 @@ public class MainScreen extends JFrame {
 		
 		
 		
-		visualReps.setPreferredSize(new Dimension(timelineLength,600));
+		visualReps.setPreferredSize(new Dimension(timelineLength,500));
 
 	}
 	//Just draws the timeline panel.
@@ -309,6 +309,8 @@ public class MainScreen extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getActionCommand().equals("Edit")) {
 				currentDialog=new TrackDialog(currentTrack);
+				currentDialog.getFrame().addWindowListener(new DialogListener());
+
 			} else if (e.getActionCommand().equals("Delete")) {
 				if (JOptionPane.YES_OPTION==JOptionPane.showConfirmDialog(null,"Are you sure?","Conformation", JOptionPane.YES_NO_OPTION)){
 					Script script=currentTrack.getScript();
@@ -427,7 +429,8 @@ public class MainScreen extends JFrame {
 				startedAt=-2;
 				selected=findWhichTrack((JLabel)e.getComponent());
 				currentDialog=new TrackDialog(selected);
-				
+				currentDialog.getFrame().addWindowListener(new DialogListener());
+
 			}
 			String trackn="";
 			if (selected==null) {
@@ -466,7 +469,9 @@ public class MainScreen extends JFrame {
 				startedAt=-2;
 				Track selected=null;
 				selected=findWhichTrack((JLabel)e.getComponent());
-				currentDialog=new TrackDialog(selected);
+				currentDialog=new TrackDialog(selected);			
+				currentDialog.getFrame().addWindowListener(new DialogListener());
+
 			}else if (e.getClickCount()==1){
 				JLabel currentLabel=(JLabel)e.getComponent();
 				selected=whichTrack(currentLabel);
@@ -583,8 +588,7 @@ public class MainScreen extends JFrame {
 	class EditButtonListener implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 			currentDialog=new TrackDialog(selected);
-			DialogListener listener=new DialogListener();
-			currentDialog.getFrame().addWindowListener(listener);
+			currentDialog.getFrame().addWindowListener(new DialogListener());
 		}
 	}
 	class DeleteButtonListener implements ActionListener{
