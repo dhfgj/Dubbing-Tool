@@ -39,17 +39,17 @@ public class MainScreen extends JFrame {
 
 	Script currentScript;
 	private ArrayList<Track> trackList;
-
+	boolean paused=false;
 	Clip clip=null;
 	int currentFrame;
 	private boolean previewing=false;
 	int timelineLength;
+	TrackDialog currentDialog;
 	public MainScreen(Script newScript, JMenuBar menu) {
 		topMenu=menu;
 		currentScript=newScript;
 		this.setJMenuBar(topMenu);
 		initializeWithScript();
-
 	}
 	private void initializeWithScript(){
 		trackList=currentScript.getScriptTracks();
@@ -87,6 +87,7 @@ public class MainScreen extends JFrame {
 		setVisible(true);
 
 	}
+	
 	private void setButtonPanel(){
 		buttonPanel=new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel,BoxLayout.X_AXIS));
@@ -307,7 +308,7 @@ public class MainScreen extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			if (e.getActionCommand().equals("Edit")) {
-				new TrackDialog(currentTrack);
+				currentDialog=new TrackDialog(currentTrack);
 			} else if (e.getActionCommand().equals("Delete")) {
 				if (JOptionPane.YES_OPTION==JOptionPane.showConfirmDialog(null,"Are you sure?","Conformation", JOptionPane.YES_NO_OPTION)){
 					Script script=currentTrack.getScript();
@@ -347,15 +348,18 @@ public class MainScreen extends JFrame {
 				e.printStackTrace();
 			}
 			clip.setFramePosition(frameStart);
-			/*clip.addLineListener(new LineListener() {
+			clip.addLineListener(new LineListener() {
               public void update(LineEvent event) {
                 if (event.getType() == LineEvent.Type.STOP) {
-                  event.getLine().close();
-                  System.exit(0);
-                  //this should probably open a popup
+                	if (!paused){
+        				playPause.setIcon(new ImageIcon("PlayButton.png"));
+        				currentFrame=0;
+        				pausedAt=-1;
+        				startedAt=-2;
+                	}
                 }
               }
-            });*/
+            });
 			clip.start();
 		}
 	}
@@ -422,7 +426,8 @@ public class MainScreen extends JFrame {
 				pausedAt=-1;
 				startedAt=-2;
 				selected=findWhichTrack((JLabel)e.getComponent());
-				new TrackDialog(selected);
+				currentDialog=new TrackDialog(selected);
+				
 			}
 			String trackn="";
 			if (selected==null) {
@@ -461,7 +466,7 @@ public class MainScreen extends JFrame {
 				startedAt=-2;
 				Track selected=null;
 				selected=findWhichTrack((JLabel)e.getComponent());
-				new TrackDialog(selected);
+				currentDialog=new TrackDialog(selected);
 			}else if (e.getClickCount()==1){
 				JLabel currentLabel=(JLabel)e.getComponent();
 				selected=whichTrack(currentLabel);
@@ -547,33 +552,39 @@ public class MainScreen extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if (!previewing){
 				if (pausedAt>0 & pausedAt<selected.getLength()) {
-					//clip allows users to specify from where they should start playing
+					
 				} else {
 					now=new Date();
 					startedAt=now.getTime();
 					if (clip==null||currentFrame==clip.getFrameLength())
 						currentFrame=0;
 					playTrack(selected, currentFrame);
-					//this has to be changed too
 				}
 				playPause.setIcon(new ImageIcon("PauseButton.png"));
 				previewing=true;
-
+				paused=false;
 			}else{
 				playPause.setIcon(new ImageIcon("PlayButton.png"));
 				previewing=false;
 				now=new Date();
 				pausedAt=now.getTime()-startedAt;
+				paused=true;
 				if (clip.isActive()){
 					currentFrame=clip.getFramePosition();
 					clip.stop();
+				}else{
+					currentFrame=0;
+					pausedAt=-1;
+					startedAt=-2;
 				}
 			}
 		}
 	}
 	class EditButtonListener implements ActionListener{
 		public void actionPerformed(ActionEvent e){
-			new TrackDialog(selected);
+			currentDialog=new TrackDialog(selected);
+			DialogListener listener=new DialogListener();
+			currentDialog.getFrame().addWindowListener(listener);
 		}
 	}
 	class DeleteButtonListener implements ActionListener{
@@ -587,6 +598,12 @@ public class MainScreen extends JFrame {
 			} else {
 				//nothing happens here
 			}
+		}
+	} 
+	class DialogListener extends WindowAdapter{
+		
+		public void windowClosing(WindowEvent e){
+			initializeWithScript();
 		}
 	}
 }
