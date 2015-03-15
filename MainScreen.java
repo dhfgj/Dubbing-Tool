@@ -154,7 +154,7 @@ public class MainScreen extends JFrame {
 			trackStats[counter][1]=new JLabel("" +
 					secondsToTime(current.getSecondsOffset()));
 			trackChart.add(trackStats[counter][1]);
-			if (current.getRelativeTo()!=null)
+			if (current.getRelativeTo()!=current)
 				trackStats[counter][2]=new JLabel(current.getRelativeTo().getTrackName());
 			else
 				trackStats[counter][2]=new JLabel("Start of Script");
@@ -466,14 +466,14 @@ public class MainScreen extends JFrame {
 				pausedAt=-1;
 				startedAt=-2;
 				RightClickOptions rco= new
-						RightClickOptions(findWhichTrack((JLabel)e.getComponent()));
+						RightClickOptions(whichTrack((JLabel)e.getComponent()));
 				rco.show(e.getComponent(), e.getX(), e.getY());
 			}else if (e.getClickCount()==2) {
 				previewing=false;
 				pausedAt=-1;
 				startedAt=-2;
 				selected=whichTrack((JLabel)e.getComponent());
-				currentDialog=new TrackDialog(selected);				
+				currentDialog=new TrackDialog(selected);			
 				currentDialog.getFrame().addWindowListener(new DialogListener());
 
 			}else if (e.getClickCount()==1){
