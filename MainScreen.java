@@ -51,6 +51,11 @@ public class MainScreen extends JFrame {
 		this.setJMenuBar(topMenu);
 		initializeWithScript();
 	}
+	public void updateMainScreen(Script script){
+		currentScript=script;
+		initializeWithScript();
+	}
+	
 	private void initializeWithScript(){
 		trackList=currentScript.getScriptTracks();
 		setTracks();
