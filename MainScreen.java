@@ -367,6 +367,11 @@ public class MainScreen extends JFrame {
                 }
               }
             });
+			int intensity=track.getIntensity();
+			FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+			double gain = (intensity/100); // change the (0.5) to (intensity/100)
+			float dB = (float) (Math.log(gain) / Math.log(10.0) * 20.0);
+			gainControl.setValue(dB);
 			clip.start();
 		}
 	}
@@ -612,6 +617,10 @@ public class MainScreen extends JFrame {
 		
 		public void windowClosing(WindowEvent e){
 			initializeWithScript();
+			pausedAt=-1;
+			startedAt=-2;
+			previewing=false;
+			currentFrame=0;
 		}
 	}
 }
