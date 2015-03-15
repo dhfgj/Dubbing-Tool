@@ -472,8 +472,8 @@ public class MainScreen extends JFrame {
 				previewing=false;
 				pausedAt=-1;
 				startedAt=-2;
-				selected=findWhichTrack((JLabel)e.getComponent());
-				currentDialog=new TrackDialog(selected);			
+				selected=whichTrack((JLabel)e.getComponent());
+				currentDialog=new TrackDialog(selected);				
 				currentDialog.getFrame().addWindowListener(new DialogListener());
 
 			}else if (e.getClickCount()==1){
