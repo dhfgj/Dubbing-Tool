@@ -1,6 +1,11 @@
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.io.File;
-
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 public class Script {
     private ArrayList<Track> tracks;
     private String name;
@@ -54,7 +59,7 @@ public class Script {
             tracks.add(index2-1,theNewTrack);
 
 	    if(theNewTrack.getRelativeTo()==tracks.get(0)){
-		OffsetTree.addStartChildren(new TrackNode(theNewTrack));
+		myTree.addStartChildren(new TrackNode(theNewTrack));
 	    }else{
 		//go down tree and find your relative :)
 		//tell your relative that you are its child
