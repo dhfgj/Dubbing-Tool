@@ -1,23 +1,13 @@
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
-import java.net.URL;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.Time;
 import java.util.ArrayList;
-
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -34,9 +24,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
 import java.io.*;
-
 import javax.sound.sampled.*;
 // To do: make sure preview quits at end of track, set volume of preview based on intensity (0-100 -> -80-6)
 public class TrackDialog extends JFrame implements MouseListener, ActionListener, ChangeListener {
@@ -237,6 +225,8 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 						origTrack.setIntensity(trackIntensity);
 						origTrack.setRelativeTo(relativeTrack);
 						origTrack.setFile(trackFile);
+						origTrack.getScript().deleteTrack(origTrack.getRelativeTo());
+						origTrack.getScript().addTrack(relativeTrack);
 						origTrack.getScript().saveScript();
 						frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					}
