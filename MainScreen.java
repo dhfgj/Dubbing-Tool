@@ -88,7 +88,7 @@ public class MainScreen extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setContentPane(panel);
 		pack();
-		setSize(1000,1000);
+		setSize(1000,700);
 		setVisible(true);
 
 	}
@@ -450,6 +450,11 @@ public class MainScreen extends JFrame {
 			}
 
 		}
+	}
+	public void openTrackDialog(Track whichTrack){
+		selected=whichTrack;
+		currentDialog=new TrackDialog(selected);
+		currentDialog.getFrame().addWindowListener(new DialogListener());
 	}
 	private Track whichTrack(JLabel label){
 		for (int counter=0;counter<trackImages.length;counter++){
