@@ -16,6 +16,10 @@ public class Script {
         path=thePath;
         tracks=new ArrayList<Track>();
     }
+    
+    public String getPath() {
+		return path;
+	}
 
     public void setName(String theName){name=theName;}
     public String getName(){return name;}
