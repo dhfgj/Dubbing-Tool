@@ -8,7 +8,7 @@ public class TrackNode{
 
     public TrackNode(Track theNewTrack){
 	myTrack=theNewTrack;
-	if((theNewTrack!=theNewTrack.getRelativeTo())||(theNewTrack.getRelativeTo()!=null)){
+	if(theNewTrack.getRelativeTo()!=theNewTrack){
 		myParent=new TrackNode(theNewTrack.getRelativeTo());
 	}
 	
