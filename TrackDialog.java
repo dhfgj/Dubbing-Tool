@@ -9,6 +9,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
+
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -25,7 +26,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.io.*;
+
 import javax.sound.sampled.*;
 // To do: make sure preview quits at end of track, set volume of preview based on intensity (0-100 -> -80-6)
 public class TrackDialog extends JFrame implements MouseListener, ActionListener, ChangeListener, WindowListener {
@@ -159,7 +162,7 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 				contentPane.add(tracks);
 				beginningOfScript = new JLabel("Start of Script");
 				tracks.setPreferredSize(new Dimension(500, 10));
-                beginningOfScript.addMouseListener(this);
+				beginningOfScript.addMouseListener(this);
 				contentPane.add(beginningOfScript);
 				for(int i = 0; i < origTrack.getScript().getScriptTracks().size(); i++){
 					JLabel trackName = new JLabel(origTrack.getScript().getScriptTracks().get(i).getTrackName());
@@ -181,13 +184,24 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 					relativeTrack = origTrack.getRelativeTo();
 					relativeTrackName.setText("Start of Script");
 				}
-				
+
 			}
 		}
 	}
 	public void mouseReleased(MouseEvent arg0) {
 	}
 	public static void main(String [] args){
+		/*Script currentScript;
+		MainScreen theScreen;
+		Menu menu=new Menu();
+		currentScript=new Script("First Script", "C:\\Users\\Andrew\\workspace\\DubbingTool\\src\\begu.xml");
+		try {
+			currentScript.addTrack(new Track("Hi bro", currentScript, 0, "hi"));
+			currentScript.addTrack(new Track("Sup bro", currentScript, 0, "hi"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		theScreen = new MainScreen(currentScript, menu);*/
 		TrackDialog test = new TrackDialog(new Track("Test", new Script("Test Script", "C:\\Users\\Andrew\\workspace\\DubbingTool\\src"),
 				"C:\\Users\\Andrew\\workspace\\DubbingTool\\src\\Test.wav"));
 	}
@@ -207,22 +221,25 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 						origTrack.setIntensity(trackIntensity);
 						if (!(origTrack.getPath().equals(trackPath))){
 							Track newTrack = new Track(origTrack.getTrackName(), origTrack.getRelativeTo(), origTrack.getScript(), trackPath, origTrack.getStart(), origTrack.getIntensity(), origTrack.getSecondsOffset());
-							origTrack.getScript().addTrack(newTrack);
 							origTrack.getScript().deleteTrack(origTrack);
+							origTrack.getScript().addTrack(newTrack);
 						}
-						
+
 						/*origTrack.setRelativeTo(whatever);
 						origTrack.getScript().deleteTrack(origTrack);
 						origTrack.getScript().addTrack(origTrack);*/
 						
-						//origTrack.setRelativeTo(relativeTrack);
-						origTrack.getScript().addTrack(relativeTrack);
-						origTrack.getScript().deleteTrack(origTrack.getRelativeTo());
+						if (relativeTrack != origTrack.getRelativeTo()){
+							origTrack.setRelativeTo(relativeTrack);
+							origTrack.getScript().deleteTrack(origTrack);
+							origTrack.getScript().addTrack(origTrack);	
+						}
+						
 						origTrack.getScript().saveScript();
 						frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					}
 					else {
-						if (actionCommand.equals("Cancel")){
+						if (actionCommand.equals("Cancel")){	
 							frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 						} else {
 							if (actionCommand.equals("Cancel Preview")){
@@ -249,6 +266,7 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 		clipTimer.addActionListener(this);
 		previewWindow = new JFrame(origTrack.getTrackName());
 		previewWindow.setSize(400, 180);
+		previewWindow.addWindowListener(this);
 		previewWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		previewWindow.setVisible(true);
 		JButton cancel = new JButton("Cancel");
@@ -305,36 +323,38 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 	@Override
 	public void windowActivated(WindowEvent arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
-	public void windowClosed(WindowEvent arg0) {
-		// TODO Auto-generated method stub
-		
+	public void windowClosed(WindowEvent e) {
+		if(e.getSource() == previewWindow){
+			clip.stop();
+		}
+
 	}
 	@Override
 	public void windowClosing(WindowEvent arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
 	public void windowDeactivated(WindowEvent arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
 	public void windowDeiconified(WindowEvent arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
 	public void windowIconified(WindowEvent arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
 	public void windowOpened(WindowEvent arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }
