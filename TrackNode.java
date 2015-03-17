@@ -8,8 +8,10 @@ public class TrackNode{
 
     public TrackNode(Track theNewTrack){
 	myTrack=theNewTrack;
-	myParent=new TrackNode(theNewTrack.getRelativeTo());
-
+	if((theNewTrack!=theNewTrack.getRelativeTo())||(theNewTrack.getRelativeTo()!=null)){
+		myParent=new TrackNode(theNewTrack.getRelativeTo());
+	}
+	
 	//gots to set up children boi
     }
 
