@@ -108,7 +108,7 @@ public class WriteXML {
 			Transformer tForm=tFact.newTransformer();
 
 			DOMSource docSource= new DOMSource(doc);
-			StreamResult str=new StreamResult(new File(path));
+			StreamResult str=new StreamResult(new File(path + ".xml"));
 
 			tForm.transform(docSource, str);
 
@@ -116,6 +116,30 @@ public class WriteXML {
 			e.printStackTrace();
 		}
 	}
+	
+	//Uncomment for testing
+	/*public static void main(String[] args) { 
+		try {
+			DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder= dbf.newDocumentBuilder();
+
+			Document doc=docBuilder.newDocument();
+
+			Element rootElement=doc.createElement("Script");
+			doc.appendChild(rootElement);
+			
+			TransformerFactory tFact=TransformerFactory.newInstance();
+			Transformer tForm=tFact.newTransformer();
+
+			DOMSource docSource= new DOMSource(doc);
+			StreamResult str=new StreamResult(new File("Z:\\AOOD\\beguHJGDFJKSDGJKSDGHFJKSDGF" + ".xml"));
+
+			tForm.transform(docSource, str);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}*/
 	
 	
 	//Uncomment for testing
