@@ -79,6 +79,38 @@ public class Script {
     public int getDuration(){
        
     }
+    
+    private byte[] combineBytes(byte[] a, byte[] b, int aSecs, int bSecs, int offset) {
+    	
+    	int bytesPerSecond=a.length/aSecs;
+    	
+    	int bytesAfter=bytesPerSecond*offset;
+    	
+    	ArrayList<Byte> bytes=new ArrayList<Byte>();
+    	
+    	for (int i=0; i<bytesAfter; i++) {
+    		bytes.add(a[i]); 
+    	}
+    	
+    	int counter=0;
+    	for (int i=bytesAfter; i<a.length; i++) {
+    		bytes.add((byte) ((a[i] + b[counter]) >> 1)); 
+    		counter++;
+    	}
+    	
+    	for (int i=counter; i<b.length; i++) {
+    		bytes.add(b[i]); 
+    	}
+    	
+    	byte[] out = new byte[bytes.size()];
+    	
+    	for(int i=0; i<bytes.size(); i++) {
+    		out[i]=bytes.get(i);
+    	}
+    	
+    	return out;
+    
+    }
 
     private void saveBytesAsWav(byte[] bytes, String path) throws Exception{
         ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
