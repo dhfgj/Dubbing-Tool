@@ -1,3 +1,4 @@
+import java.awt.GridLayout;
 import java.io.File;
 
 import javax.swing.BorderFactory;
@@ -16,7 +17,13 @@ public class FileNotFound extends JFrame {
 		
 		panel=new JPanel();
 		
-		this.setSize(400, 100);
+		if (faultyFilePath.length()>60) {
+			this.setSize(1000, 100);
+		} else if (faultyFilePath.length()>36) {
+			this.setSize(600, 100);
+		} else {
+			this.setSize(400, 100);
+		}
 		
 		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		
@@ -28,10 +35,9 @@ public class FileNotFound extends JFrame {
 		
 	}
 	
-	//Uncomment for testing
-	/*public static void main(String[] args) {
+	public static void main(String[] args) {
 		FileNotFound f=new FileNotFound("Z:\\Drive\\AOOD\\blablah\\Sample.xml");
 
-	}*/
+	}
 
 }
