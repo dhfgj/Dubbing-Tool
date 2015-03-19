@@ -304,19 +304,35 @@ public class Track {
         //third parameter is pixel width
     }
     public int startTime() {
-        Track relative=this;
-        Track next=null;
-        int millis=-relative.getDurationMilliseconds();
-        while (relative!=next) {
-            millis=millis + relative.getDurationMilliseconds();
-            next=this;
-            relative=this.getRelativeTo();
-        }
-        return (int) millis/1000;
+    	int seconds=0;
+
+    	Track t=this;
+    	Track relativeT=this.getRelativeTo();
+
+    	while(t!=null || t.getTrackName().equals(relativeT.getTrackName())) {
+    		if (t.getStart() && t.getSecondsOffset()==0) {
+    			t=relativeT;
+    			relativeT=t.getRelativeTo();
+    		} else if(!t.getStart()) {
+    			seconds=seconds + t.getDurationSeconds() + relativeT.getDurationSeconds() + t.getSecondsOffset();
+    			t=relativeT;
+    			relativeT=t.getRelativeTo();
+    		} else if(t.getStart()) {
+    			seconds=seconds + t.getDurationSeconds() + getSecondsOffset();
+    			t=relativeT;
+    			relativeT=t.getRelativeTo();
+    			t=relativeT;
+    			relativeT=t.getRelativeTo();
+    		}
+    	}
+    	
+    	return seconds;
+
     }
+
     public int endTime() {
-        Track relative=this;
-        int millis=0;
+    	Track relative=this;
+    	int millis=0;
         while (relative!=null) {
             millis=millis + relative.getDurationMilliseconds();
             relative=this.getRelativeTo();
