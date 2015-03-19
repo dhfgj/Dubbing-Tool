@@ -138,5 +138,26 @@ myScript.getMyTree().printChildren(myScript.getMyTree().getRootNode());
             e.printStackTrace();
         }
     }
+    
+   // uncomment for testing
+    /*public static void main(String[] args) {
+    	
+    	Track newTrack=new Track("Name", null, null,"src/(100) Daft Punk - Lose Yourself to Dance.wav", true, 100);
+    	
+    	//Path path1 = Paths.get("src/(100) Daft Punk - Lose Yourself to Dance.wav");
+		Path path2 = Paths.get("Z:\\AOOD\\(128) Cee Lo Green - Forget You.wav");
+
+		try {
+			byte[] blue = Files.readAllBytes(path2);
+	    	
+	    	int bytesPerSecond=blue.length/52;
+	    	System.out.println(bytesPerSecond);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		
+    	
+    }
 }
 //duration pls
