@@ -1,7 +1,11 @@
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -68,9 +72,13 @@ public class Script {
         }
     }
     public int getDuration(){
-        myTree.calculateLength(myTree.getRootNode(), 0);
-        int retInt=myTree.getMaxLength();
-        return retInt;
+       int maxLength=0;
+       for(Track t:tracks){
+    	   if((t.startTime()+t.getLength())>maxLength){
+    		   maxLength=(t.startTime()+t.getLength());
+    	   }
+       }
+       return maxLength;
     }
     private void saveBytesAsWav(byte[] bytes, String path) throws Exception{
     	ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
@@ -112,7 +120,7 @@ public class Script {
 
     public void saveScript(){ WriteXML xml=new WriteXML(tracks, path); } //<--XML one
     public void saveScriptAsWav(String path){
-
+    	
 
     } //<--write out as WAV one
    
@@ -132,5 +140,25 @@ public class Script {
       } catch (Exception e) {e.printStackTrace();}
       myScript.getMyTree().printChildren(myScript.getMyTree().getRootNode());
       }*/
+    
+    public static void main(String[] args) {
+    	
+    	Track newTrack=new Track("Name", null, null,"src/(100) Daft Punk - Lose Yourself to Dance.wav", true, 100);
+    	
+    	//Path path1 = Paths.get("src/(100) Daft Punk - Lose Yourself to Dance.wav");
+		Path path2 = Paths.get("Z:\\AOOD\\(128) Cee Lo Green - Forget You.wav");
+
+		try {
+			byte[] blue = Files.readAllBytes(path2);
+	    	
+	    	int bytesPerSecond=blue.length/52;
+	    	System.out.println(blue.length);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+    	
+    }
 }
 //duration pls
