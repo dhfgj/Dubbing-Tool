@@ -18,15 +18,12 @@ public class Script {
         path=thePath;
         tracks=new ArrayList<Track>();
     }
-    
     public String getPath() {
-		return path;
-	}
-
+        return path;
+    }
     public void setName(String theName){name=theName;}
     public String getName(){return name;}
     public ArrayList<Track> getScriptTracks(){return tracks;}
-
     public void deleteTrack(Track track){
         if(track.getRelativeTo()==track){
             boolean done=false;
@@ -34,7 +31,6 @@ public class Script {
             for(i=1;!done&&i<tracks.size();i++){
                 if(tracks.get(i).getRelativeTo()!=track){
                     done=true;
-
                 }
             }
             for(int j=1;j<i&&j<tracks.size();j++){
@@ -45,83 +41,61 @@ public class Script {
             tracks.remove(track);
         }
     }
-
     public void addTrack(Track theNewTrack) throws Exception{
         if(theNewTrack.getRelativeTo()==theNewTrack){
             if(tracks.size()==0){
                 tracks.add(theNewTrack);
-		myTree=new OffsetTree(theNewTrack);
+                myTree=new OffsetTree(theNewTrack);
             }else{
                 throw new Exception();
             }
         }else if(theNewTrack.getRelativeTo()!=null){
             int index1=tracks.indexOf(theNewTrack.getRelativeTo());
-            int index2=0;
+            int index2=tracks.size();
             for(int i=index1;i<tracks.size();i++){
-                if(tracks.get(i).getRelativeTo()!=theNewTrack.getRelativeTo()){
+                if((tracks.get(i).getRelativeTo()!=theNewTrack.getRelativeTo())||(i==tracks.size()-1)){
                     index2=i;
                 }
             }
-            tracks.add(index2-1,theNewTrack);
-
-	    if(theNewTrack.getRelativeTo()==tracks.get(0)){
-		myTree.addStartChildren(new TrackNode(theNewTrack));
-	    }else{
-		//go down tree and find your relative :)
-		//tell your relative that you are its child
-		
-	    }
+            tracks.add(index2,theNewTrack);
+            if(theNewTrack.getRelativeTo()==tracks.get(0)){
+                myTree.addStartChildren(new TrackNode(theNewTrack));
+            }else{
+                myTree.findMyDaddy(theNewTrack.getRelativeTo(), theNewTrack);
+            }
         }else{
             throw new Exception();
         }
     }
-
     public int getDuration(){
-       
+        myTree.calculateLength(myTree.getRootNode(), 0);
+        int retInt=myTree.getMaxLength();
+        return retInt;
     }
-    
-    private byte[] combineBytes(byte[] a, byte[] b, int aSecs, int bSecs, int offset) {
-    	
-    	int bytesPerSecond=a.length/aSecs;
-    	
-    	int bytesAfter=bytesPerSecond*offset;
-    	
-    	ArrayList<Byte> bytes=new ArrayList<Byte>();
-    	
-    	for (int i=0; i<bytesAfter; i++) {
-    		bytes.add(a[i]); 
-    	}
-    	
-    	int counter=0;
-    	for (int i=bytesAfter; i<a.length; i++) {
-    		bytes.add((byte) ((a[i] + b[counter]) >> 1)); 
-    		counter++;
-    	}
-    	
-    	for (int i=counter; i<b.length; i++) {
-    		bytes.add(b[i]); 
-    	}
-    	
-    	byte[] out = new byte[bytes.size()];
-    	
-    	for(int i=0; i<bytes.size(); i++) {
-    		out[i]=bytes.get(i);
-    	}
-    	
-    	return out;
-    
-    }
-
     private void saveBytesAsWav(byte[] bytes, String path) throws Exception{
         ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
         AudioInputStream audioStream = AudioSystem.getAudioInputStream(byteStream);
         AudioSystem.write(audioStream, AudioFileFormat.Type.WAVE, new File(path));
     }
     public void saveScript(){ WriteXML xml=new WriteXML(tracks, path); } //<--XML one
-
     public void saveScriptAsWav(String path){} //<--write out as WAV one
-
     //needs to read in XML?
+   
+    //some tests IGNORE THESE
+    /*public OffsetTree getMyTree(){return myTree;}
+      public static void main(String[] args){
+      Script myScript=new Script("Begumbar", "Z:\\AOOD\\Begumbar.xml");
+      Track newTrack=new Track("Begu", myScript, "src/(100) Daft Punk - Lose Yourself to Dance");
+      Track dagomba=new Track("Dagomba",newTrack,myScript, "src/(128) Daft Punk - One More Time");
+      Track jarmungar=new Track("Jarmungar",newTrack,myScript, "src/(128) Daft Punk - One More Time");
+      Track stopIt=new Track("stopIt",dagomba,myScript, "src/(128) Daft Punk - One More Time");
+      try {
+      myScript.addTrack(newTrack);
+      myScript.addTrack(dagomba);
+      myScript.addTrack(jarmungar);
+      myScript.addTrack(stopIt);
+      } catch (Exception e) {e.printStackTrace();}
+      myScript.getMyTree().printChildren(myScript.getMyTree().getRootNode());
+      }*/
 }
-
 //duration pls
