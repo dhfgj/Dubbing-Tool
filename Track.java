@@ -5,6 +5,11 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -50,6 +55,20 @@ public class Track {
 	    return (int) milliseconds;}catch(Exception e){}
         return 0;
     }
+    
+    public byte[] getBytes() {
+		
+    	Path path=Paths.get(soundFile);
+    	
+    	try {
+			return Files.readAllBytes(path);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return null;
+    	
+    }
     public byte[] getBytes(int milliseconds) {
         try{
             ByteArrayOutputStream out=new ByteArrayOutputStream();
@@ -74,7 +93,9 @@ public class Track {
             } else {
                 return allBytes;
             }
-        }catch(Exception e){}
+        }catch(Exception e){
+        	
+        }
         return new byte[1];
     }
     public Track(String myName, Track relative, Script host,String newPath, boolean beginning,int newIntensity) {
