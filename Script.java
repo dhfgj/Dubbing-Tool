@@ -6,7 +6,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -16,7 +15,7 @@ public class Script {
     private ArrayList<Track> tracks;
     private String name;
     private String path;
-    private OffsetTree myTree;
+    
     public Script(String scriptName,String thePath){
         name=scriptName;
         path=thePath;
@@ -45,11 +44,12 @@ public class Script {
             tracks.remove(track);
         }
     }
+    //private OffsetTree myTree;
     public void addTrack(Track theNewTrack) throws Exception{
         if(theNewTrack.getRelativeTo()==theNewTrack){
             if(tracks.size()==0){
                 tracks.add(theNewTrack);
-                myTree=new OffsetTree(theNewTrack);
+                //myTree=new OffsetTree(theNewTrack);
             }else{
                 throw new Exception();
             }
@@ -62,103 +62,81 @@ public class Script {
                 }
             }
             tracks.add(index2,theNewTrack);
-            if(theNewTrack.getRelativeTo()==tracks.get(0)){
+            /*if(theNewTrack.getRelativeTo()==tracks.get(0)){
                 myTree.addStartChildren(new TrackNode(theNewTrack));
             }else{
                 myTree.findMyDaddy(theNewTrack.getRelativeTo(), theNewTrack);
-            }
+            }*/
         }else{
             throw new Exception();
         }
     }
     public int getDuration(){
-       int maxLength=0;
-       for(Track t:tracks){
-    	   if((t.startTime()+t.getLength())>maxLength){
-    		   maxLength=(t.startTime()+t.getLength());
-    	   }
-       }
-       return maxLength;
+        int maxLength=0;
+        for(Track t:tracks){
+            if((t.startTime()+t.getLength())>maxLength){
+                maxLength=(t.startTime()+t.getLength());
+            }
+        }
+        return maxLength;
     }
     private void saveBytesAsWav(byte[] bytes, String path) throws Exception{
-    	ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
-    	AudioInputStream audioStream = AudioSystem.getAudioInputStream(byteStream);
-    	AudioSystem.write(audioStream, AudioFileFormat.Type.WAVE, new File(path));
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
+        AudioInputStream audioStream = AudioSystem.getAudioInputStream(byteStream);
+        AudioSystem.write(audioStream, AudioFileFormat.Type.WAVE, new File(path));
     }
-
     private byte[] combineBytes(byte[] a, byte[] b, int aSecs, int bSecs, int offset) {
-
-    	int bytesPerSecond=a.length/aSecs;
-
-    	int bytesAfter=bytesPerSecond*offset;
-
-    	ArrayList<Byte> bytes=new ArrayList<Byte>();
-
-    	for (int i=0; i<bytesAfter; i++) {
-    		bytes.add(a[i]); 
-    	}
-
-    	int counter=0;
-    	for (int i=bytesAfter; i<a.length; i++) {
-    		bytes.add((byte) ((a[i] + b[counter]) >> 1)); 
-    		counter++;
-    	}
-
-    	for (int i=counter; i<b.length; i++) {
-    		bytes.add(b[i]); 
-    	}
-
-    	byte[] out = new byte[bytes.size()];
-
-    	for(int i=0; i<bytes.size(); i++) {
-    		out[i]=bytes.get(i);
-    	}
-
-    	return out;
-
+        int bytesPerSecond=a.length/aSecs;
+        int bytesAfter=bytesPerSecond*offset;
+        ArrayList<Byte> bytes=new ArrayList<Byte>();
+        for (int i=0; i<bytesAfter; i++) {
+            bytes.add(a[i]);
+        }
+        int counter=0;
+        for (int i=bytesAfter; i<a.length; i++) {
+            bytes.add((byte) ((a[i] + b[counter]) >> 1));
+            counter++;
+        }
+        for (int i=counter; i<b.length; i++) {
+            bytes.add(b[i]);
+        }
+        byte[] out = new byte[bytes.size()];
+        for(int i=0; i<bytes.size(); i++) {
+            out[i]=bytes.get(i);
+        }
+        return out;
     }
-
     public void saveScript(){ WriteXML xml=new WriteXML(tracks, path); } //<--XML one
     public void saveScriptAsWav(String path){
-    	
-
     } //<--write out as WAV one
-   
     //some tests IGNORE THESE
     /*public OffsetTree getMyTree(){return myTree;}
-      public static void main(String[] args){
-      Script myScript=new Script("Begumbar", "Z:\\AOOD\\Begumbar.xml");
-      Track newTrack=new Track("Begu", myScript, "src/(100) Daft Punk - Lose Yourself to Dance");
-      Track dagomba=new Track("Dagomba",newTrack,myScript, "src/(128) Daft Punk - One More Time");
-      Track jarmungar=new Track("Jarmungar",newTrack,myScript, "src/(128) Daft Punk - One More Time");
-      Track stopIt=new Track("stopIt",dagomba,myScript, "src/(128) Daft Punk - One More Time");
-      try {
-      myScript.addTrack(newTrack);
-      myScript.addTrack(dagomba);
-      myScript.addTrack(jarmungar);
-      myScript.addTrack(stopIt);
-      } catch (Exception e) {e.printStackTrace();}
-      myScript.getMyTree().printChildren(myScript.getMyTree().getRootNode());
-      }*/
-    
+public static void main(String[] args){
+Script myScript=new Script("Begumbar", "Z:\\AOOD\\Begumbar.xml");
+Track newTrack=new Track("Begu", myScript, "src/(100) Daft Punk - Lose Yourself to Dance");
+Track dagomba=new Track("Dagomba",newTrack,myScript, "src/(128) Daft Punk - One More Time");
+Track jarmungar=new Track("Jarmungar",newTrack,myScript, "src/(128) Daft Punk - One More Time");
+Track stopIt=new Track("stopIt",dagomba,myScript, "src/(128) Daft Punk - One More Time");
+try {
+myScript.addTrack(newTrack);
+myScript.addTrack(dagomba);
+myScript.addTrack(jarmungar);
+myScript.addTrack(stopIt);
+} catch (Exception e) {e.printStackTrace();}
+myScript.getMyTree().printChildren(myScript.getMyTree().getRootNode());
+}*/
     public static void main(String[] args) {
-    	
-    	Track newTrack=new Track("Name", null, null,"src/(100) Daft Punk - Lose Yourself to Dance.wav", true, 100);
-    	
-    	//Path path1 = Paths.get("src/(100) Daft Punk - Lose Yourself to Dance.wav");
-		Path path2 = Paths.get("Z:\\AOOD\\(128) Cee Lo Green - Forget You.wav");
-
-		try {
-			byte[] blue = Files.readAllBytes(path2);
-	    	
-	    	int bytesPerSecond=blue.length/52;
-	    	System.out.println(blue.length);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-    	
+        Track newTrack=new Track("Name", null, null,"src/(100) Daft Punk - Lose Yourself to Dance.wav", true, 100);
+        //Path path1 = Paths.get("src/(100) Daft Punk - Lose Yourself to Dance.wav");
+        Path path2 = Paths.get("Z:\\AOOD\\(128) Cee Lo Green - Forget You.wav");
+        try {
+            byte[] blue = Files.readAllBytes(path2);
+            int bytesPerSecond=blue.length/52;
+            System.out.println(blue.length);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }
 //duration pls
