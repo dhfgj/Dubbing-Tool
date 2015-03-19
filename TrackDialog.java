@@ -1,4 +1,5 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Insets;
@@ -9,10 +10,11 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
-
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -31,21 +33,23 @@ import java.io.*;
 
 import javax.sound.sampled.*;
 // To do: make sure preview quits at end of track, set volume of preview based on intensity (0-100 -> -80-6)
-public class TrackDialog extends JFrame implements MouseListener, ActionListener, ChangeListener, WindowListener {
+public class TrackDialog extends JFrame implements ActionListener, ChangeListener, WindowListener {
 	JFrame frame, previewWindow;
 	Track origTrack, relativeTrack;
 	boolean startOrEnd, openBoolean;
 	int trackIntensity, returnOpenVal;
 	JPanel contentPane, drawTracks, drawStartOrEnd, drawIntensity, drawButtons;
-	JLabel trackName, relativeTrackName, startEnd, intensity, beginningOfScript;
+	JLabel emptyLabel, trackLabel, relativeTrackLabel, startEnd, intensity, beginningOfScript;
+	JComboBox trackName, relativeTrackName;
 	JRadioButton start, end;
 	ButtonGroup group;
 	JSlider changeIntensity;
-	JButton preview, save, cancel;
+	JButton track, preview, save, cancel;
 	Clip clip;
 	Timer clipTimer;
-	ArrayList<JLabel> trackNames = new ArrayList<JLabel>();
+	String[] trackNames;
 	String trackPath;
+
 	public TrackDialog(Track track){
 		origTrack = track;
 		startOrEnd = origTrack.getStart();
@@ -53,7 +57,7 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 		relativeTrack = origTrack.getRelativeTo();
 		trackPath = origTrack.getPath();
 		frame = new JFrame(origTrack.getTrackName());
-		frame.setSize(600, 250);
+		frame.setSize(540, 215);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
 		contentPane = new JPanel();
@@ -66,20 +70,48 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 		frame.setVisible(true);
 	}
 	public void drawTracks(){
+		int relativeIndex = 0;
+
 		drawTracks = new JPanel();
-		drawTracks.setBorder(new EmptyBorder(10, 0, 10, 0));
-		trackName = new JLabel(origTrack.getTrackName());
-		trackName.addMouseListener(this);
-		trackName.setBorder(new EmptyBorder(0, 100, 0, 100));
-		drawTracks.add(trackName, BorderLayout.LINE_START);
-		if (origTrack.getRelativeTo() == relativeTrack)
-			relativeTrackName = new JLabel("Start of Script");
-		else
-			relativeTrackName = new JLabel(origTrack.getRelativeTo().getTrackName());
-		relativeTrackName.addMouseListener(this);
-		relativeTrackName.setBorder(new EmptyBorder(0, 100, 0, 100));
+		
+		trackLabel = new JLabel("Current Track:");
+		//trackLabel.setBorder(new EmptyBorder(0, 10, 0, 0));
+		drawTracks.add(trackLabel, BorderLayout.LINE_END);
+		
+		track = new JButton(origTrack.getTrackName());
+		track.setBorder(new EmptyBorder(0, 0, 0, 10));
+		track.setPreferredSize(new Dimension(85, 25));
+		track.setForeground(Color.black);
+		track.setActionCommand("TrackName");
+		track.addActionListener(this);
+		drawTracks.add(track, BorderLayout.LINE_START);
+		
+		emptyLabel = new JLabel();
+		emptyLabel.setPreferredSize(new Dimension(40, 25));
+		drawTracks.add(emptyLabel, BorderLayout.LINE_START);
+
+		relativeTrackLabel = new JLabel("Relative Track:");
+		drawTracks.add(relativeTrackLabel, BorderLayout.LINE_END);
+		
+		trackNames = new String[origTrack.getScript().getScriptTracks().size()];
+		//System.out.println(origTrack.getScript().getScriptTracks().size());
+		for (int i = 0; i < origTrack.getScript().getScriptTracks().size(); i++){
+			trackNames[i] = origTrack.getScript().getScriptTracks().get(i).getTrackName();
+		}
+		//for (int i = 0; i < trackNames.length; i++)
+		//	System.out.println(trackNames[i]);
+		for (int i = 0; i < trackNames.length; i++){
+			if (trackNames[i].equals(origTrack.getRelativeTo().getTrackName())){
+				relativeIndex = i;
+			}
+		}
+		relativeTrackName = new JComboBox(trackNames);
+		relativeTrackName.setPreferredSize(new Dimension(85, 25));
+		relativeTrackName.setSelectedIndex(relativeIndex);
+		relativeTrackName.setActionCommand("Relative TrackName");
+		relativeTrackName.addActionListener(this);
 		drawTracks.add(relativeTrackName, BorderLayout.LINE_END);
-		drawTracks.setVisible(true);
+
 		contentPane.add(drawTracks);
 	}
 	public void drawStartOrEnd(){
@@ -111,6 +143,7 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 		intensity = new JLabel("Intensity:");
 		drawIntensity.add(intensity, BorderLayout.PAGE_START);
 		changeIntensity = new JSlider(0, 100, origTrack.getIntensity());
+		changeIntensity.setPreferredSize(new Dimension(250, 43));
 		changeIntensity.setMajorTickSpacing(10);
 		changeIntensity.setMinorTickSpacing(1);
 		changeIntensity.setPaintTicks(true);
@@ -137,73 +170,33 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 		drawButtons.setVisible(true);
 		contentPane.add(drawButtons);
 	}
-	public void mouseClicked(MouseEvent arg0) {
-	}
-	public void mouseEntered(MouseEvent arg0) {
-	}
-	public void mouseExited(MouseEvent arg0) {
-	}
-	public void mousePressed(MouseEvent e) {
-		if(e.getSource() == trackName){
-			openBoolean=true;
-			FileChooser chooser=new FileChooser();
-			if(returnOpenVal==JFileChooser.APPROVE_OPTION){
-				trackPath=chooser.getChooser().getSelectedFile().getAbsolutePath();
-			}
-		} else {
-			if (e.getSource() == relativeTrackName){
-				JFrame openTrack = new JFrame();
-				openTrack.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-				openTrack.setVisible(true);
-				JPanel contentPane = new JPanel();
-				contentPane.setLayout(new GridLayout(origTrack.getScript().getScriptTracks().size() + 2, 1));
-				JLabel tracks = new JLabel("Tracks:");
-				tracks.setPreferredSize(new Dimension(500, 10));
-				contentPane.add(tracks);
-				beginningOfScript = new JLabel("Start of Script");
-				tracks.setPreferredSize(new Dimension(500, 10));
-				beginningOfScript.addMouseListener(this);
-				contentPane.add(beginningOfScript);
-				for(int i = 0; i < origTrack.getScript().getScriptTracks().size(); i++){
-					JLabel trackName = new JLabel(origTrack.getScript().getScriptTracks().get(i).getTrackName());
-					trackName.addMouseListener(this);
-					trackNames.add(trackName);
-					contentPane.add(trackName);
-				}
-				openTrack.setSize(200, 50 * (origTrack.getScript().getScriptTracks().size() + 2));
-				openTrack.setContentPane(contentPane);
-				openTrack.setVisible(true);
-			} else {
-				for (int i = 0; i < trackNames.size(); i++){
-					if (e.getSource() == trackNames.get(i)){
-						relativeTrack = origTrack.getScript().getScriptTracks().get(i);
-						relativeTrackName.setText(origTrack.getScript().getScriptTracks().get(i).getTrackName());
-					} 
-				}
-				if (e.getSource() == beginningOfScript){
-					relativeTrack = origTrack.getRelativeTo();
-					relativeTrackName.setText("Start of Script");
-				}
-
-			}
-		}
-	}
-	public void mouseReleased(MouseEvent arg0) {
-	}
 	public static void main(String [] args){
 		/*Script currentScript;
-		MainScreen theScreen;
-		Menu menu=new Menu();
-		currentScript=new Script("First Script", "C:\\Users\\Andrew\\workspace\\DubbingTool\\src\\begu.xml");
-		try {
-			currentScript.addTrack(new Track("Hi bro", currentScript, 0, "hi"));
-			currentScript.addTrack(new Track("Sup bro", currentScript, 0, "hi"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		theScreen = new MainScreen(currentScript, menu);*/
-		TrackDialog test = new TrackDialog(new Track("Test", new Script("Test Script", "C:\\Users\\Andrew\\workspace\\DubbingTool\\src"),
-				"C:\\Users\\Andrew\\workspace\\DubbingTool\\src\\Test.wav"));
+        MainScreen theScreen;
+        Menu menu=new Menu();
+        currentScript=new Script("First Script", "C:\\Users\\Andrew\\workspace\\DubbingTool\\src\\begu.xml");
+        try {
+            currentScript.addTrack(new Track("Hi bro", currentScript, 0, "hi"));
+            currentScript.addTrack(new Track("Sup bro", currentScript, 0, "hi"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        theScreen = new MainScreen(currentScript, menu);*/
+		//TrackDialog test = new TrackDialog(new Track("Test", new Script("Test Script", "C:\\Users\\Andrew\\workspace\\DubbingTool\\src"),
+		//		"C:\\Users\\Andrew\\workspace\\DubbingTool\\src\\Test.wav"));
+		
+		Script currentScript=new Script("First Script", "Z:\\begu.xml");
+        currentScript=new Script("First Script", "Z:\\begu.xml");
+        Track hiBro = new Track("Hi bro", currentScript, 0, "Z:\\My Documents\\DubbingTool\\src\\Test.wav");
+        Track supBro = new Track("Sup bro", hiBro, currentScript, "Z:\\My Documents\\DubbingTool\\src");
+        try {
+            currentScript.addTrack(hiBro);
+            currentScript.addTrack(supBro);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        TrackDialog test = new TrackDialog(hiBro);
+
 	}
 	public void actionPerformed(ActionEvent e) {
 		String actionCommand = e.getActionCommand();
@@ -222,30 +215,60 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 						if (!(origTrack.getPath().equals(trackPath))){
 							Track newTrack = new Track(origTrack.getTrackName(), origTrack.getRelativeTo(), origTrack.getScript(), trackPath, origTrack.getStart(), origTrack.getIntensity(), origTrack.getSecondsOffset());
 							origTrack.getScript().deleteTrack(origTrack);
-							origTrack.getScript().addTrack(newTrack);
+							try {
+								origTrack.getScript().addTrack(newTrack);
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						}
 
 						/*origTrack.setRelativeTo(whatever);
-						origTrack.getScript().deleteTrack(origTrack);
-						origTrack.getScript().addTrack(origTrack);*/
-						
+                        origTrack.getScript().deleteTrack(origTrack);
+                        origTrack.getScript().addTrack(origTrack);*/
+
 						if (relativeTrack != origTrack.getRelativeTo()){
 							origTrack.setRelativeTo(relativeTrack);
 							origTrack.getScript().deleteTrack(origTrack);
-							origTrack.getScript().addTrack(origTrack);	
+							try {
+								origTrack.getScript().addTrack(origTrack);
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}   
 						}
-						
+
 						origTrack.getScript().saveScript();
 						frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					}
 					else {
-						if (actionCommand.equals("Cancel")){	
+						if (actionCommand.equals("Cancel")){   
 							frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 						} else {
 							if (actionCommand.equals("Cancel Preview")){
 								previewWindow.setVisible(false);
 								clip.stop();
 								previewWindow.dispose();
+							} else {
+								if (actionCommand.equals("Relative TrackName")){
+									JComboBox cb = (JComboBox)e.getSource();
+									String trackName = (String)cb.getSelectedItem();
+									for (int i = 0; i < origTrack.getScript().getScriptTracks().size(); i++){
+										if (trackName.equals(origTrack.getScript().getScriptTracks().get(i).getTrackName())){
+											relativeTrack = origTrack.getScript().getScriptTracks().get(i);
+											relativeTrackName.setSelectedIndex(i);
+										}
+									}
+								}
+								else {
+									if (actionCommand.equals("TrackName")){
+										openBoolean=true;
+										FileChooser chooser=new FileChooser();
+										if(returnOpenVal==JFileChooser.APPROVE_OPTION){
+											trackPath=chooser.getChooser().getSelectedFile().getAbsolutePath();
+										}
+									}
+								}
 							}
 						}
 					}
@@ -260,19 +283,30 @@ public class TrackDialog extends JFrame implements MouseListener, ActionListener
 		}
 	}
 	public void preview(){
-		//add a window listener to cancel review when x is clicked
+		//make it look nice 
 		clipTimer = new Timer(origTrack.getDurationMilliseconds(), this);
 		clipTimer.setActionCommand("Cancel Preview");
 		clipTimer.addActionListener(this);
+			
 		previewWindow = new JFrame(origTrack.getTrackName());
-		previewWindow.setSize(400, 180);
+		previewWindow.setLayout(new BorderLayout());
+		previewWindow.setSize(300, 200);
 		previewWindow.addWindowListener(this);
 		previewWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		previewWindow.setVisible(true);
+		
+		JLabel previewLabel = new JLabel("Preview:");
+		previewLabel.setPreferredSize(new Dimension(100, 100));
+		previewWindow.add(previewLabel, BorderLayout.PAGE_START);
+		
 		JButton cancel = new JButton("Cancel");
 		cancel.setActionCommand("Cancel Preview");
 		cancel.addActionListener(this);
-		previewWindow.add(cancel);
+		previewWindow.add(cancel, BorderLayout.CENTER);
+		
+		JLabel emptyLabel = new JLabel();
+		emptyLabel.setPreferredSize(new Dimension(300, 20));
+		previewWindow.add(emptyLabel, BorderLayout.PAGE_END);
 		try {
 			File file = new File(origTrack.getPath());
 			AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
