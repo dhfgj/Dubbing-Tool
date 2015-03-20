@@ -1,4 +1,4 @@
-\import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -117,7 +117,7 @@ public class Script {
 		return getThis;
 	}
 	
-	private ArrayList<Byte> listToByes(byte[] b) {
+	private ArrayList<Byte> bytesToList(byte[] b) {
 		ArrayList<Byte> newList=new ArrayList<Byte>();
 		for (int i=0; i<b.length; i++) {
 			newList.add(b[i]);
@@ -139,11 +139,11 @@ public class Script {
 				tracks.get(i-1).getDurationSeconds(), tracks.get(i).getDurationSeconds(), 
 				tracks.get(i).getSecondsOffset()));
 
-
+			finalBytes=bytesToList(newBytes);
 
 		}
 		
-		return null;
+		return listToBytes(finalBytes);
 	}
 
 	public void saveScriptAsWav(String path){
