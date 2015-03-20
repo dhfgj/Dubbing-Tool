@@ -42,7 +42,7 @@ public class Track {
         }
         return 0;
     }
-    private int getDurationMilliseconds() {
+    public int getDurationMilliseconds() {
         try{ AudioInputStream input=AudioSystem.getAudioInputStream(file);
         AudioFormat format=input.getFormat();
         long fileLength=file.length();
