@@ -305,7 +305,7 @@ public class Track {
         while(!done) {
             if(!t.getStart()) {
                 seconds=seconds + relativeT.getDurationSeconds() + t.getSecondsOffset();
-            } else if(t.getStart()) {
+            } else if(t.getStart()&&t.getSecondsOffset()!=0) {
                 seconds+= getSecondsOffset();
 
             }
