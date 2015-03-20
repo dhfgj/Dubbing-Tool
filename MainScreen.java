@@ -45,7 +45,8 @@ public class MainScreen extends JFrame {
 	private boolean previewing=false;
 	int timelineLength;
 	TrackDialog currentDialog;
-	public MainScreen(Script newScript, JMenuBar menu) {
+	public MainScreen(Script newScript, JMenuBar menu, String name) {
+		this.setName(name);
 		topMenu=menu;
 		currentScript=newScript;
 		this.setJMenuBar(topMenu);
@@ -239,14 +240,9 @@ public class MainScreen extends JFrame {
 				index=counter;
 			}
 		}
-		timelineLength=farthestImage+300;
-		if (timelineLength%30<3){
-			timelineLength+=10;
-		}
+		timelineLength=farthestImage+trackList.get(index).endTime();
 		
-		
-		
-		visualReps.setPreferredSize(new Dimension(timelineLength,500));
+		visualReps.setPreferredSize(new Dimension(timelineLength,trackList.size()*120));
 
 	}
 	//Just draws the timeline panel.
@@ -331,7 +327,13 @@ public class MainScreen extends JFrame {
 
 	public void playTrack(Track track, int frameStart) {
 		AudioInputStream sound=null;
-		File soundFile = new File(track.getPath());
+		File soundFile;
+		if(!track.getPath().endsWith(".wav")) {
+			soundFile = new File(track.getPath()+".wav");
+		}else{
+			soundFile = new File(track.getPath());
+		}
+		
 		try {
 			sound = AudioSystem.getAudioInputStream(soundFile);
 		} catch (UnsupportedAudioFileException e2) {
