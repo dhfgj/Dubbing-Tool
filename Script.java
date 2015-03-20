@@ -61,7 +61,7 @@ public class Script {
 					index2=i;
 				}
 			}
-			tracks.add(index2,theNewTrack);
+			tracks.add(index2+1,theNewTrack);
 			/*if(theNewTrack.getRelativeTo()==tracks.get(0)){
                 myTree.addStartChildren(new TrackNode(theNewTrack));
             }else{
