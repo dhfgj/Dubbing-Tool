@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -36,7 +35,7 @@ public class Track {
     public void setSecondsOffset(int newSeconds) {
         secondsOffset=newSeconds;
     }
-    private int getDurationSeconds() {
+    public int getDurationSeconds() {
         try {
             return (int) (getDurationMilliseconds()/1000);
         } catch(Exception e) {
@@ -45,29 +44,25 @@ public class Track {
     }
     private int getDurationMilliseconds() {
         try{ AudioInputStream input=AudioSystem.getAudioInputStream(file);
-	    AudioFormat format=input.getFormat();
-	    long fileLength=file.length();
-	    int frames=format.getFrameSize();
-	    float rate=format.getFrameRate();
-	    float seconds=(fileLength/(frames * rate));
-	    double milliseconds=seconds * 1000;
-	    input.close();
-	    return (int) milliseconds;}catch(Exception e){}
+        AudioFormat format=input.getFormat();
+        long fileLength=file.length();
+        int frames=format.getFrameSize();
+        float rate=format.getFrameRate();
+        float seconds=(fileLength/(frames * rate));
+        double milliseconds=seconds * 1000;
+        input.close();
+        return (int) milliseconds;}catch(Exception e){}
         return 0;
     }
-    
     public byte[] getBytes() {
-		
-    	Path path=Paths.get(soundFile);
-    	
-    	try {
-			return Files.readAllBytes(path);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return null;
-    	
+        Path path=Paths.get(soundFile);
+        try {
+            return Files.readAllBytes(path);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
     }
     public byte[] getBytes(int milliseconds) {
         try{
@@ -94,7 +89,6 @@ public class Track {
                 return allBytes;
             }
         }catch(Exception e){
-        	
         }
         return new byte[1];
     }
@@ -304,35 +298,26 @@ public class Track {
         //third parameter is pixel width
     }
     public int startTime() {
-    	int seconds=0;
+        int seconds=0;
+        Track t=this;
+        Track relativeT=this.getRelativeTo();
+        boolean done=false;
+        while(!done) {
+            if(!t.getStart()) {
+                seconds=seconds + relativeT.getDurationSeconds() + t.getSecondsOffset();
+            } else if(t.getStart()) {
+                seconds+= getSecondsOffset();
 
-    	Track t=this;
-    	Track relativeT=this.getRelativeTo();
-
-    	while(t!=null || t.getTrackName().equals(relativeT.getTrackName())) {
-    		if (t.getStart() && t.getSecondsOffset()==0) {
-    			t=relativeT;
-    			relativeT=t.getRelativeTo();
-    		} else if(!t.getStart()) {
-    			seconds=seconds + t.getDurationSeconds() + relativeT.getDurationSeconds() + t.getSecondsOffset();
-    			t=relativeT;
-    			relativeT=t.getRelativeTo();
-    		} else if(t.getStart()) {
-    			seconds=seconds + t.getDurationSeconds() + getSecondsOffset();
-    			t=relativeT;
-    			relativeT=t.getRelativeTo();
-    			t=relativeT;
-    			relativeT=t.getRelativeTo();
-    		}
-    	}
-    	
-    	return seconds;
-
+            }
+            t=relativeT;
+            relativeT=t.getRelativeTo();
+            if(t.getRelativeTo()==t){done=true;}
+        }
+        return seconds;
     }
-
     public int endTime() {
-    	Track relative=this;
-    	int millis=0;
+        Track relative=this;
+        int millis=0;
         while (relative!=null) {
             millis=millis + relative.getDurationMilliseconds();
             relative=this.getRelativeTo();
@@ -362,20 +347,17 @@ public class Track {
     }
     // public void playTrack(){}
     // public Clip getPlayableClip(){}
-   
-   
     /*public static void main(String[] args) {
-      Track baladev=new Track("...", null, "src/(128) Daft Punk - One More Time.wav");
-      JFrame bello=new JFrame();
-       
-      bello.setBackground(Color.BLACK);
-      //JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
-      JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
-      JPanel jPanel = new JPanel();
-      jPanel.setBackground(Color.CYAN);
-      jPanel.add(jLabel);
-      bello.add(jPanel);
-      bello.setSize(new Dimension(baladev.getBytes(baladev.getDurationMilliseconds()).length,100));
-      bello.setVisible(true);
-      }*/
+Track baladev=new Track("...", null, "src/(128) Daft Punk - One More Time.wav");
+JFrame bello=new JFrame();
+bello.setBackground(Color.BLACK);
+//JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
+JLabel jLabel = new JLabel(new ImageIcon(baladev.generateGraphics()));
+JPanel jPanel = new JPanel();
+jPanel.setBackground(Color.CYAN);
+jPanel.add(jLabel);
+bello.add(jPanel);
+bello.setSize(new Dimension(baladev.getBytes(baladev.getDurationMilliseconds()).length,100));
+bello.setVisible(true);
+}*/
 }
