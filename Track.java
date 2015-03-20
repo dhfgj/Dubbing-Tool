@@ -316,13 +316,7 @@ public class Track {
         return seconds;
     }
     public int endTime() {
-        Track relative=this;
-        int millis=0;
-        while (relative!=null) {
-            millis=millis + relative.getDurationMilliseconds();
-            relative=this.getRelativeTo();
-        }
-        return (int) millis/1000;
+       return startTime()+length();
     }
     private static int range(byte[] theBytes){
         int max=theBytes[0];
