@@ -1,4 +1,4 @@
-import java.io.ByteArrayOutputStream;
+\import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,6 +11,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+
 public class Script {
 	private ArrayList<Track> tracks;
 	private String name;
@@ -61,7 +62,7 @@ public class Script {
 					index2=i;
 				}
 			}
-			tracks.add(index2+1,theNewTrack);
+			tracks.add(index2,theNewTrack);
 			/*if(theNewTrack.getRelativeTo()==tracks.get(0)){
                 myTree.addStartChildren(new TrackNode(theNewTrack));
             }else{
@@ -107,7 +108,47 @@ public class Script {
 		return out;
 	}
 	public void saveScript(){ WriteXML xml=new WriteXML(tracks, path); } //<--XML one
+	
+	private byte[] listToBytes(ArrayList<Byte> b) {
+		byte[] getThis=new byte[b.size()];
+		for (int i=0; i<getThis.length; i++) {
+			getThis[i]=b.get(i);
+		}
+		return getThis;
+	}
+	
+	private ArrayList<Byte> listToByes(byte[] b) {
+		ArrayList<Byte> newList=new ArrayList<Byte>();
+		for (int i=0; i<b.length; i++) {
+			newList.add(b[i]);
+		}
+		return newList;
+	}
+
+	public byte[] finalBytes() {
+		ArrayList<Byte> finalBytes=new ArrayList<Byte>();
+
+		byte[] byte1=tracks.get(0).getBytes();
+		for (int i=0; i<byte1.length; i++) {
+			finalBytes.add(byte1[i]);
+		}
+
+		for (int i=1; i<tracks.size(); i++) {
+
+			byte[] newBytes=(combineBytes(listToBytes(finalBytes), tracks.get(i).getBytes(), 
+				tracks.get(i-1).getDurationSeconds(), tracks.get(i).getDurationSeconds(), 
+				tracks.get(i).getSecondsOffset()));
+
+
+
+		}
+		
+		return null;
+	}
+
 	public void saveScriptAsWav(String path){
+
+	
 	} //<--write out as WAV one
 	//some tests IGNORE THESE
 	/*public OffsetTree getMyTree(){return myTree;}
@@ -131,8 +172,8 @@ myScript.getMyTree().printChildren(myScript.getMyTree().getRootNode());
 		Path path2 = Paths.get("Z:\\AOOD\\(128) Cee Lo Green - Forget You.wav");
 		try {
 			byte[] blue = Files.readAllBytes(path2);
-			int bytesPerSecond=blue.length/52;
-			System.out.println(blue.length);
+			int bytesPerSecond=blue.length/newTrack.getDurationSeconds();
+			System.out.println(bytesPerSecond);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
