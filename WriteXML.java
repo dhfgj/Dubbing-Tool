@@ -75,7 +75,7 @@ public class WriteXML {
 				
 				Element secondsOffset = doc.createElement("secondsOffset");
 				secondsOffset.appendChild(doc.createTextNode(String.valueOf(getInfo.getSecondsOffset())));
-				track.appendChild(startOrEnd);
+				track.appendChild(secondsOffset);
 
 
 			}
