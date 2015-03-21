@@ -104,16 +104,17 @@ public class ReadXML {
 				int secondsOffset=Integer.parseInt(elem.getElementsByTagName("secondsOffset").item(0).getTextContent());
 				
 				//public Track(String myName, Track relative, Script host,String newPath, boolean beginning,int newIntensity)
-				
+System.out.println(path + ", " + name + ", " + intensity + ", " + startOrEnd + ", " + secondsOffset);
 				Track track;
 				if (i==0) {
-					track=new Track(name, null, script, path, startOrEnd, intensity);
+					track=new Track(name, script, path, startOrEnd, intensity);
 				} else {
+					//System.out.println("IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII: " + i + ", " + "tracks.size()");
 					track=new Track(name, tracks.get(i-1), script, path, startOrEnd, intensity, secondsOffset);
 				}
 				
+				tracks.add(track);
 				script.addTrack(track);
-				
 			}
 			
 		} catch(Exception e) {
@@ -126,7 +127,11 @@ public class ReadXML {
 			
 			System.out.println(blubber.getTrackName() + ", " + blubber.getPath() + ", " + blubber.getIntensity() + ", " + blubber.getStart());
 		}*/
+System.out.println(script.getScriptTracks().size());
+for (int k=0; k<script.getScriptTracks().size(); k++) {
+	System.out.println("JELLYBEANZ\n" + script.getScriptTracks().get(k).getPath() + " " + script.getScriptTracks().get(k).getSecondsOffset());
 
+}
 		return script;
 		
 	}
