@@ -91,7 +91,7 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 		relativeTrackLabel = new JLabel("Relative Track:");
 		drawTracks.add(relativeTrackLabel, BorderLayout.LINE_END);
 
-		trackNames = new String[origTrack.getScript().getScriptTracks().size() + 1];
+		trackNames = new String[origTrack.getScript().getScriptTracks().size()];
 		//System.out.println(origTrack.getScript().getScriptTracks().size());
 		listOfNames = new ArrayList<String>();
 
@@ -220,7 +220,7 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 		track2 = new Track("Do I Wanna Know", track1, testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\Arctic Monkeys - Do I Wanna Know.wav");
 		track3 = new Track("I See Fire", track2, testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\Ed Sheeran - I See Fire.wav");
 		track4 = new Track("Chasing Cars", track3, testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\Snow Patrol - Chasing Cars.wav");
-		track5 = new Track("You're Gonnna Go Far Kid", track4, testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\The Offspring - You're Gonna Go Far Kid.wav");
+		track5 = new Track("You're Gonna Go Far Kid", track4, testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\The Offspring - You're Gonna Go Far Kid.wav");
 		
 		try{
 			testScript.addTrack(track1);
@@ -292,11 +292,12 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 									String trackName = (String)cb.getSelectedItem();
 									for (int i = 0; i < origTrack.getScript().getScriptTracks().size(); i++){
 										if (trackName.equals(origTrack.getScript().getScriptTracks().get(i).getTrackName())){
+											relativeTrackName.setSelectedIndex(i);
+
 											if (trackName.equals("Start of Track"))
 												relativeTrack = origTrack;
 											else 
 												relativeTrack = origTrack.getScript().getScriptTracks().get(i);
-											relativeTrackName.setSelectedIndex(i);
 										}
 									}
 								}
@@ -377,7 +378,7 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 			JScrollPane logScrollPane = new JScrollPane(log);
 			chooser=new JFileChooser();
 			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-			FileNameExtensionFilter filter=new FileNameExtensionFilter("XML File", "xml");
+			FileNameExtensionFilter filter=new FileNameExtensionFilter("WAV File", "wav");
 			chooser.setFileFilter(filter);
 			add(logScrollPane, BorderLayout.CENTER);
 			if(openBoolean){
