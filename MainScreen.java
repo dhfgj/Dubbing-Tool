@@ -832,16 +832,9 @@ secondsToTime(current.getSecondsOffset()));
 
 			int intensity=track.getIntensity();
 
-			FloatControl gainControl = (FloatControl)
-
-					clip.getControl(FloatControl.Type.MASTER_GAIN);
-
-			double gain = (intensity/100); // change the (0.5) to (intensity/100)
-
-			float dB = (float) (Math.log(gain) / Math.log(10.0) * 20.0);
-
-			gainControl.setValue(dB);
-
+			FloatControl gainControl =
+					(FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+			gainControl.setValue(((origTrack.getIntensity() * 86) / 100) - 80);
 			clip.start();
 
 		}
@@ -1100,7 +1093,7 @@ secondsToTime(current.getSecondsOffset()));
 
 			width=tracks.getWidth();
 
-			height=(getHeight()-1)/trackList.size();
+			height=(getHeight())/trackList.size();
 
 			g2.drawLine(0, 0, width, 0);
 
