@@ -834,7 +834,8 @@ secondsToTime(current.getSecondsOffset()));
 
 			FloatControl gainControl =
 					(FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-			gainControl.setValue(((origTrack.getIntensity() * 86) / 100) - 80);
+			gainControl.setValue(((selected.getIntensity() * 86) / 100) - 80);
+
 			clip.start();
 
 		}
@@ -1093,7 +1094,7 @@ secondsToTime(current.getSecondsOffset()));
 
 			width=tracks.getWidth();
 
-			height=(getHeight())/trackList.size();
+			height=(getHeight()-1)/trackList.size();
 
 			g2.drawLine(0, 0, width, 0);
 
