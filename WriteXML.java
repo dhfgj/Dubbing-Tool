@@ -84,7 +84,7 @@ public class WriteXML {
 			Transformer tForm=tFact.newTransformer();
 
 			DOMSource docSource= new DOMSource(doc);
-			StreamResult str=new StreamResult(new File(path));
+			StreamResult str=new StreamResult(new File(path + ".xml"));
 
 			tForm.transform(docSource, str);
 
