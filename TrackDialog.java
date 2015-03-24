@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -17,12 +18,16 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.io.*;
 import java.util.ArrayList;
 
@@ -32,9 +37,9 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 	JFrame frame, previewWindow;
 	Track origTrack, relativeTrack;
 	boolean startOrEnd, openBoolean;
-	int trackIntensity, returnOpenVal;
+	int trackIntensity, returnOpenVal, secondsOffset;
 	JPanel contentPane, drawTracks, drawStartOrEnd, drawIntensity, drawButtons;
-	JLabel emptyLabel, trackLabel, relativeTrackLabel, startEnd, intensity, beginningOfScript;
+	JLabel emptyLabel, trackLabel, relativeTrackLabel, startEnd, intensity, beginningOfScript, offset;
 	JComboBox trackName, relativeTrackName;
 	JRadioButton start, end;
 	ButtonGroup group;
@@ -45,12 +50,15 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 	String[] trackNames;
 	String trackPath;
 	ArrayList <String> listOfNames;
+	SpinnerModel offsets;
+	JSpinner spinner; 
 	public TrackDialog(Track track){
 		origTrack = track;
 		startOrEnd = origTrack.getStart();
 		trackIntensity = origTrack.getIntensity();
 		relativeTrack = origTrack.getRelativeTo();
 		trackPath = origTrack.getPath();
+		secondsOffset = origTrack.getSecondsOffset();
 		frame = new JFrame(origTrack.getTrackName());
 		frame.setSize(540, 215);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -68,8 +76,8 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 		// make the combo box not show the current track + make start of script the first combo box element + make sure preview quits when the track is over
 		//int counter = origTrack.getScript().getScriptTracks().size() - 1;
 		int relativeIndex = 0;
-		
-		
+
+
 		drawTracks = new JPanel();
 
 		trackLabel = new JLabel("Current Track:");
@@ -101,12 +109,12 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 				listOfNames.add(origTrack.getScript().getScriptTracks().get(i).getTrackName());
 		}
 		//for (int i = 0; i < listOfNames.size(); i++)
-			//System.out.println(listOfNames.get(i));
+		//System.out.println(listOfNames.get(i));
 		for (int i = 0; i < listOfNames.size(); i++){
 			//System.out.println(listOfNames.get(i));
 			trackNames[i] = listOfNames.get(i);
 		}
-		
+
 		relativeTrackName = new JComboBox(trackNames);
 		relativeTrackName.setPreferredSize(new Dimension(85, 25));
 		relativeTrackName.setSelectedIndex(relativeIndex);
@@ -117,11 +125,11 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 				relativeTrackName.setSelectedIndex(0);
 			else{
 				if (origTrack.getRelativeTo().getTrackName().equals(trackNames[i]))
-						relativeTrackName.setSelectedIndex(i);
+					relativeTrackName.setSelectedIndex(i);
 			}
-				
+
 		}
-		
+
 		drawTracks.add(relativeTrackName, BorderLayout.LINE_END);
 
 		contentPane.add(drawTracks);
@@ -130,7 +138,6 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 		drawStartOrEnd = new JPanel();
 		drawStartOrEnd.setBorder(new EmptyBorder(10, 0, 10, 0));
 		startEnd = new JLabel("Start/End:");
-		startEnd.setBorder(new EmptyBorder(0, 0, 0, 0));
 		drawStartOrEnd.add(startEnd, BorderLayout.LINE_START);
 		start = new JRadioButton("Start");
 		start.setActionCommand("Start");
@@ -147,6 +154,17 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 		group = new ButtonGroup();
 		group.add(start);
 		group.add(end);
+		
+		offset = new JLabel("Offset:");
+		offset.setBorder(new EmptyBorder(0, 10, 0, 0));
+		drawStartOrEnd.add(offset, BorderLayout.PAGE_END);
+		
+		offsets = new SpinnerNumberModel(0, 0, origTrack.getRelativeTo().getDurationSeconds(), 1);	
+		spinner = new JSpinner(offsets);
+		spinner.setEditor(new JSpinner.NumberEditor(spinner, "0"));
+		spinner.addChangeListener(this);
+		drawStartOrEnd.add(spinner, BorderLayout.PAGE_END);
+		
 		drawStartOrEnd.setVisible(true);
 		contentPane.add(drawStartOrEnd);
 	}
@@ -214,14 +232,14 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 		Track track1, track2, track3, track4, track5;
 		MainScreen screen;
 		Menu menu; 
-		
+
 		testScript = new Script("Test", "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\testScript.xml");
 		track1 = new Track("Magic", testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\Coldplay - Magic.wav");
 		track2 = new Track("Do I Wanna Know", track1, testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\Arctic Monkeys - Do I Wanna Know.wav");
 		track3 = new Track("I See Fire", track2, testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\Ed Sheeran - I See Fire.wav");
 		track4 = new Track("Chasing Cars", track3, testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\Snow Patrol - Chasing Cars.wav");
 		track5 = new Track("You're Gonna Go Far Kid", track4, testScript, "C:\\Users\\Andrew\\Desktop\\Dubbing Tool Tests\\The Offspring - You're Gonna Go Far Kid.wav");
-		
+
 		try{
 			testScript.addTrack(track1);
 			testScript.addTrack(track2);
@@ -230,10 +248,10 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 			testScript.addTrack(track5);
 		}
 		catch (Exception e){e.printStackTrace();}
-		
+
 		menu = new Menu();
-		screen = new MainScreen(testScript, menu);
-		
+		screen = new MainScreen(testScript, menu,"Dubbing Tool");
+
 	}
 	public void actionPerformed(ActionEvent e) {
 		String actionCommand = e.getActionCommand();
@@ -249,6 +267,7 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 					if (actionCommand.equals("Save")){
 						origTrack.setStart(startOrEnd);
 						origTrack.setIntensity(trackIntensity);
+						origTrack.setSecondsOffset(secondsOffset);
 						if (!(origTrack.getPath().equals(trackPath))){
 							Track newTrack = new Track(origTrack.getTrackName(), origTrack.getRelativeTo(), origTrack.getScript(), trackPath, origTrack.getStart(), origTrack.getIntensity(), origTrack.getSecondsOffset());
 							origTrack.getScript().deleteTrack(origTrack);
@@ -265,10 +284,10 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
                         origTrack.getScript().addTrack(origTrack);*/
 
 						if (relativeTrack != origTrack.getRelativeTo()){
-							origTrack.setRelativeTo(relativeTrack);
+							Track newTrack = new Track(origTrack.getTrackName(), relativeTrack, origTrack.getScript(), trackPath, origTrack.getStart(), origTrack.getIntensity(), origTrack.getSecondsOffset());
 							origTrack.getScript().deleteTrack(origTrack);
 							try {
-								origTrack.getScript().addTrack(origTrack);
+								origTrack.getScript().addTrack(newTrack);
 							} catch (Exception e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -318,9 +337,15 @@ public class TrackDialog extends JFrame implements ActionListener, ChangeListene
 		}
 	}
 	public void stateChanged(ChangeEvent e) {
-		JSlider source = (JSlider)e.getSource();
-		if (!source.getValueIsAdjusting()){
-			trackIntensity = (int)source.getValue();
+		if (e.getSource() == changeIntensity){
+			JSlider source = (JSlider)e.getSource();
+			if (!source.getValueIsAdjusting()){
+				trackIntensity = (int)source.getValue();
+			}
+		} else {
+			if (e.getSource() == spinner){
+				secondsOffset = (int) spinner.getValue();
+			}
 		}
 	}
 	public void preview(){
