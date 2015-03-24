@@ -1094,7 +1094,7 @@ secondsToTime(current.getSecondsOffset()));
 
 			width=tracks.getWidth();
 
-			height=(getHeight()-1)/trackList.size();
+			height=(getHeight())/trackList.size();
 
 			g2.drawLine(0, 0, width, 0);
 
