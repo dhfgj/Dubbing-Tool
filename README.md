@@ -1,2 +1,2 @@
 # Dubbing-Tool
-A tool for all your linerdubs.
+Software for editing and dubbing sound files.
